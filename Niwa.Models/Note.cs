@@ -1,0 +1,61 @@
+using System.ComponentModel.DataAnnotations;
+using Niwa.Models.Meta;
+
+namespace Niwa.Models;
+
+public class Note
+{
+    public Guid Id { get; set; }
+
+    /// <summary>
+    ///     Note author. Usually the same as in <see cref="Garden.UserId" />, but not necessarily always.
+    /// </summary>
+    public Guid UserId { get; set; }
+
+    /// <summary>
+    ///     Navigation property for <see cref="UserId" />.
+    /// </summary>
+    public User User { get; set; } = null!;
+
+    public Guid LatestRevisionId { get; set; }
+    public NoteRevision LatestRevision { get; set; } = null!;
+
+    /// <summary>
+    ///     Garden which contains the note.
+    /// </summary>
+    public Guid GardenId { get; set; }
+
+    /// <summary>
+    ///     Navigation property for <see cref="GardenId" />.
+    /// </summary>
+    public Garden Garden { get; set; } = null!;
+
+    /// <summary>
+    ///     Fully assembled from the revisions latest version of the title. Used for fast access.
+    /// </summary>
+    [Length(Lengths.NoteTitleMin, Lengths.NoteTitleMax)]
+    public string Title { get; set; } = null!;
+
+    /// <summary>
+    ///     Fully assembled from the revisions latest version of the summary. Used for fast access.
+    /// </summary>
+    [Length(Lengths.NoteSummaryMin, Lengths.NoteSummaryMax)]
+    public string Summary { get; set; } = null!;
+
+    /// <summary>
+    ///     Fully assembled from the revisions latest version of the content. Used for fast access.
+    /// </summary>
+    [Length(Lengths.NoteContentMin, Lengths.NoteContentMax)]
+    public string Content { get; set; } = null!;
+
+    /// <summary>
+    ///     Preview image, taken from the first image in the latest version of content (if any)
+    /// </summary>
+    [Length(Lengths.UrlMin, Lengths.UrlMax)]
+    [Url]
+    public string? Image { get; set; } = null!;
+    
+    public ICollection<Collection> Collections { get; set; } = new List<Collection>();
+
+    public DateTime CreatedDateTime { get; set; }
+}
