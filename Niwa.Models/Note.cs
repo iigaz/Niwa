@@ -54,8 +54,16 @@ public class Note
     [Length(Lengths.UrlMin, Lengths.UrlMax)]
     [Url]
     public string? Image { get; set; } = null!;
-    
+
     public ICollection<Collection> Collections { get; set; } = new List<Collection>();
+
+    public ICollection<NoteTag> Tags { get; set; } = new List<NoteTag>();
+
+    public ICollection<NoteFile> Files { get; set; } = new List<NoteFile>();
+
+    public ICollection<Comment> Comments { get; set; } = new List<Comment>();
+
+    public ICollection<User> Subscribers { get; set; } = new List<User>();
 
     public DateTime CreatedDateTime { get; set; }
 }

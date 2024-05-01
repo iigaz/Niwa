@@ -11,7 +11,7 @@ public class Role
     ///     User-readable role label.
     /// </summary>
     [Length(Lengths.RoleLabelMin, Lengths.RoleLabelMax)]
-    public int Label { get; set; }
+    public string Label { get; set; } = null!;
 
     /// <summary>
     ///     Users who have this role.

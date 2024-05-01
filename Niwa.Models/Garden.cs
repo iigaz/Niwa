@@ -7,7 +7,6 @@ public class Garden
 {
     public Guid Id { get; set; }
 
-
     [Length(Lengths.GardenTitleMin, Lengths.GardenTitleMax)]
     public string Title { get; set; } = null!;
 
@@ -23,6 +22,10 @@ public class Garden
 
     [Length(Lengths.GardenSummaryMin, Lengths.GardenSummaryMax)]
     public string Summary { get; set; } = "";
+
+    public ICollection<User> Subscribers { get; set; } = new List<User>();
+
+    public ICollection<Note> Notes { get; set; } = new List<Note>();
 
     public DateTime CreatedDateTime { get; set; }
 
