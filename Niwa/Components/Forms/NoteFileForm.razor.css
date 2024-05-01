@@ -1,0 +1,22 @@
+form {
+    box-sizing: border-box;
+}
+
+th {
+    text-align: left;
+}
+
+table {
+    width: 100%;
+    border-spacing: 1rem;
+}
+
+.tag-input {
+    text-decoration: none;
+}
+
+.footer {
+    display: flex;
+    flex-direction: row;
+    justify-content: right;
+}

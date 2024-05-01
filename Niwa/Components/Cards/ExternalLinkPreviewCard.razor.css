@@ -1,0 +1,21 @@
+.description-info {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0.5rem 0;
+    font-style: italic;
+}
+
+.url {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0.5rem 0;
+    width: fit-content;
+    max-width: 100%;
+    display: block;
+}
+
+.access-date {
+    margin: 0.5rem 0;
+}

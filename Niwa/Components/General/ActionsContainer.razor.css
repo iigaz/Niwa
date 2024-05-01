@@ -1,0 +1,18 @@
+.actions-collection {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    column-gap: 1rem;
+    width: 100%;
+}
+
+.left-actions, .right-actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 1rem;
+    color: var(--secondary-color);
+}

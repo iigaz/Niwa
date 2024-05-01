@@ -1,0 +1,39 @@
+<div class="card @(CardImage == null ? "no-image" : "")">
+    <div class="description">
+        <div class="description-container">
+            <h5 class="title">
+                @CardTitle
+            </h5>
+            @CardDescription
+        </div>
+        @if (CardFooter != null)
+        {
+            <div class="footer">
+                @CardFooter
+            </div>
+        }
+    </div>
+    @if (CardImage != null)
+    {
+        <img src="@CardImage" alt="@CardImageAltText"/>
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public string? CardTitle { get; set; }
+
+    [Parameter]
+    public RenderFragment? CardDescription { get; set; }
+
+    [Parameter]
+    public RenderFragment? CardFooter { get; set; }
+
+    [Parameter]
+    public string? CardImage { get; set; }
+
+    [Parameter]
+    public string? CardImageAltText { get; set; }
+
+}

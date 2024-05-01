@@ -1,0 +1,12 @@
+<div class="banner">
+    @Banner
+</div>
+
+
+@code {
+
+    [Parameter]
+    [EditorRequired]
+    public RenderFragment Banner { get; set; } = null!;
+
+}

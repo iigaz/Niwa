@@ -1,0 +1,42 @@
+<ImageCard CardTitle="@LinkTitle"
+           CardImage="@LinkImage"
+           CardImageAltText="@LinkTitle">
+    <CardDescription>
+        <a target="_blank" href="@LinkUrl" class="url">@LinkUrl</a>
+        <p class="description-info">@LinkDescription</p>
+        <p class="information access-date">Access date: @AccessDate</p>
+    </CardDescription>
+    <CardFooter>
+        <a href="@ReadHereLink" class="btn-link">Read here</a>
+        <a target="_blank" href="https://web.archive.org/web/*/@LinkUrl" class="btn-link">View on Wayback Machine</a>
+    </CardFooter>
+</ImageCard>
+
+@code {
+
+    private string? _description;
+
+    [Parameter]
+    public string? LinkTitle { get; set; }
+
+    [Parameter]
+    public string? LinkImage { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public string? LinkUrl { get; set; }
+
+    [Parameter]
+    public string? LinkDescription
+    {
+        get => _description;
+        set => _description = value?.ReplaceLineEndings("  ");
+    }
+
+    [Parameter]
+    public string? AccessDate { get; set; }
+
+    [Parameter]
+    public string? ReadHereLink { get; set; }
+
+}

@@ -1,0 +1,73 @@
+@using Niwa.Enums
+<ImageCard CardTitle="@Title"
+           CardImage="@Image"
+           CardImageAltText="@Title">
+    <CardDescription>
+        <div class="note-container">
+            <p class="description-info">@Summary</p>
+            <p class="actions-collection">
+                @if (Garden != null)
+                {
+                    <span class="information">From @Garden</span>
+                }
+                @if (AccessType != NoteAccessType.Public)
+                {
+                    <b>@(AccessType.ToString())</b>
+                }
+                @if (Collection != null)
+                {
+                    @(" ")
+                    <span>
+                        <i>In collection <a href="#">@Collection</a></i>
+                    </span>
+                }
+                @if (RemoveFromCollectionAvailable)
+                {
+                    @(" ")
+                    <a href="#" class="btn-link">Remove from collection</a>
+                }
+            </p>
+            <p class="tags">
+                @foreach (var tag in Tags)
+                {
+                    @(" ")
+                    <a href="#" class="tag">@tag</a>
+                }
+            </p>
+        </div>
+    </CardDescription>
+</ImageCard>
+
+@code {
+
+    private string? _summary;
+
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public string? Image { get; set; }
+
+    [Parameter]
+    public string? Garden { get; set; }
+
+    [Parameter]
+    public string? Summary
+    {
+        get => _summary;
+        set => _summary = value?.ReplaceLineEndings("  ");
+    }
+
+    [Parameter]
+    public NoteAccessType AccessType { get; set; }
+
+    [Parameter]
+    public bool RemoveFromCollectionAvailable { get; set; }
+
+    [Parameter]
+    public string? Collection { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<string> Tags { get; set; } = new List<string>();
+
+}

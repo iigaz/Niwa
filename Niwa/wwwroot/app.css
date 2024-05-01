@@ -1,0 +1,244 @@
+:root {
+    --background-color: white;
+    --main-color: black;
+    --secondary-color: #838383;
+    --main-font: 'Lato', Helvetica, Arial, sans-serif;
+    --accent-font: 'Raleway', serif;
+    --mono-font: 'IBM Plex Mono', monospace;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    font-family: var(--main-font);
+    font-weight: 300;
+    font-size: 12pt;
+    background-color: var(--background-color);
+    color: var(--main-color);
+}
+
+h1 {
+    font-family: var(--accent-font);
+    font-weight: 700;
+    font-size: 24pt;
+}
+
+h2 {
+    font-family: var(--accent-font);
+    font-weight: 700;
+    font-size: 20pt;
+}
+
+h3 {
+    font-family: var(--accent-font);
+    font-weight: 700;
+    font-size: 16pt;
+}
+
+h4 {
+    font-family: var(--accent-font);
+    font-weight: 700;
+    font-size: 14pt;
+}
+
+h5 {
+    font-family: var(--accent-font);
+    font-weight: 600;
+    font-style: italic;
+    font-size: 12pt;
+    margin: 1rem 0 0.5rem 0;
+}
+
+h6 {
+    font-family: var(--accent-font);
+    font-weight: 400;
+    font-style: italic;
+    font-size: 11pt;
+}
+
+a {
+    text-decoration: underline;
+    font-family: var(--main-font);
+    font-weight: 400;
+    font-style: normal;
+    color: var(--main-color);
+    width: fit-content;
+}
+
+a:hover {
+    color: var(--secondary-color);
+}
+
+h1 > a, h2 > a, h3 > a, h4 > a, h5 > a, h6 > a {
+    font-weight: inherit;
+}
+
+figure {
+    display: flex;
+    margin: 0 0;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+img {
+    width: 100%;
+}
+
+figcaption {
+    text-align: center;
+    font-family: var(--main-font);
+    font-weight: 300;
+    font-style: italic;
+    font-size: 11pt;
+}
+
+blockquote {
+    border-left: 1px solid var(--main-color);
+    margin: 1rem 0;
+    padding: 0.1rem 1rem;
+    font-style: italic;
+}
+
+label {
+    font-style: italic;
+    font-size: 12pt;
+    font-weight: 400;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid black;
+    width: 100%;
+}
+
+button, .btn, input[type="file"]::file-selector-button {
+    border: 2px solid black;
+    outline: none;
+    font-family: var(--main-font);
+    font-weight: 500;
+    font-size: 12pt;
+    background-color: var(--background-color);
+    color: var(--main-color);
+    padding: 0.25rem 0.75rem;
+    text-decoration: none;
+}
+
+button:hover, .btn:hover, input[type="file"]::file-selector-button:hover {
+    cursor: pointer;
+}
+
+button:active, .btn:active {
+    background-color: var(--main-color);
+    color: var(--background-color);
+}
+
+input, textarea {
+    width: 100%;
+    border: 1px solid black;
+    padding: 0.25rem 0.5rem;
+    background-color: var(--background-color);
+    font-family: var(--main-font);
+    font-weight: 300;
+    font-size: 12pt;
+    color: var(--main-color);
+    outline: none;
+}
+
+input::placeholder, textarea::placeholder {
+    color: var(--secondary-color);
+}
+
+textarea {
+    resize: vertical;
+}
+
+input[type="file"] {
+    font-family: var(--main-font);
+    font-weight: 300;
+    font-size: 12pt;
+    border: none;
+    width: fit-content;
+}
+
+input[type="file"]::file-selector-button {
+    margin-right: 1rem;
+}
+
+input[type="checkbox"] {
+    width: 1.5rem;
+    aspect-ratio: 1 / 1;
+    appearance: none;
+    margin: 0 0.5rem;
+    padding: 0;
+    background-color: var(--background-color);
+    text-align: center;
+}
+
+input[type="checkbox"]:after {
+    content: "x";
+    font-weight: 700;
+    color: var(--background-color);
+}
+
+input[type="checkbox"]:checked {
+    background-color: var(--main-color);
+}
+
+select {
+    border: 1px solid black;
+    padding: 0.25rem 0.5rem;
+    background-color: var(--background-color);
+    font-family: var(--main-font);
+    font-weight: 300;
+    font-size: 12pt;
+    color: var(--main-color);
+    outline: none;
+}
+
+li + li {
+    margin: 0.5rem 0;
+}
+
+.btn-link {
+    border: none;
+    outline: none;
+    padding: 0;
+    font-size: 12pt;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--secondary-color);
+    width: fit-content;
+    background-color: var(--background-color);
+    text-decoration: none;
+    font-family: var(--main-font);
+    text-transform: lowercase;
+}
+
+.btn-link:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.tag.tag, .url {
+    font-family: var(--mono-font);
+    font-size: 11pt;
+    font-weight: 300;
+    text-decoration: underline;
+}
+
+.tag.tag::before {
+    content: "#";
+}
+
+.information {
+    font-size: 11pt;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--secondary-color);
+}
+
+.url {
+    font-size: 10pt;
+}

@@ -1,0 +1,41 @@
+@page "/garden/admin1337"
+@using Niwa.Components.General
+@using Niwa.Enums
+@using Niwa.Components.Cards
+<h1>Author1337</h1>
+<ActionsContainer>
+    <ActionsLeft>
+        <a href="/search" class="btn-link">Search all notes</a>
+        <a href="#" class="btn-link">Subscribe to updates</a>
+    </ActionsLeft>
+    <ActionsRight>
+        <a href="#" class="btn-link">Edit</a>
+    </ActionsRight>
+</ActionsContainer>
+
+<blockquote>
+    <p>イルカは人間に次いで最も知能が高く、やがては彼らとの対話も夢ではないと考えている科学者もいる。 いろいろな意味で、正直が最善の策であることは言うまでもない。 イメージはマスコミの情報に形成される。 学校まで１０分で歩いて行ける。 いままで誰もその山頂に到達できていない。 １９８４年の８月、私は仕事でたまたま沖縄に行く事になった。 誰にでも長所と短所がある。 彼の話はあまりにも馬鹿げていたので誰も信じなかった。 ああいう洗練された人々の中で、自分はまったく場違いな気がした。 あなたは大変上手にフランス語が話せる。私もあなたと同じくらい上手に話すことができればよいのに。</p>
+</blockquote>
+
+<h5>Featured notes</h5>
+
+<div class="cards">
+    <NoteCard Title="Shower me with Divine Love"
+              Image="peter-griffith.jpg"
+              Summary="The typical latin text used to build websites is so boring.  You know the “Lorem Ipsum …”   Well with this website you can create some “spiritual ipsum” that fits more of the vibe of your site. We want you to feel more aligned with your websites before you have your final text copy ready.
+Go to our homepage and generate some Spiritual ipsum and then copy that into to your web pages you are building."
+              Collection="Reading"
+              Tags="@(new List<string> { "divine", "spiritualipsum", "peter_griffin" })"
+              AccessType="@NoteAccessType.Public">
+    </NoteCard>
+    <NoteCard Title="Shower me with Divine Love"
+              Summary="The typical latin text used to build websites is so boring.  You know the “Lorem Ipsum …”   Well with this website you can create some “spiritual ipsum” that fits more of the vibe of your site. We want you to feel more aligned with your websites before you have your final text copy ready.
+Go to our homepage and generate some Spiritual ipsum and then copy that into to your web pages you are building."
+              Tags="@(new List<string> { "divine", "spiritualipsum", "peter_griffin" })"
+              AccessType="@NoteAccessType.Public">
+    </NoteCard>
+</div>
+
+@code {
+
+}

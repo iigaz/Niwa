@@ -1,0 +1,53 @@
+<div class="card">
+    <h5 class="title">
+        @Title
+    </h5>
+    <div class="description">
+        @Description
+    </div>
+    <div class="footer">
+        <span>Active since: @ActiveSinceYear</span>
+        <span>Last activity: @LastActivityRelative</span>
+        <span>@PublicNotesCount public @(PublicNotesCount == 1 ? "note" : "notes")</span>
+        @if (Tags.Count > 0)
+        {
+            <span>
+                Popular tags:
+                <span class="tags">
+                    @foreach (var tag in Tags)
+                    {
+                        @(" ")
+                        <a href="#" class="tag">@tag</a>
+                    }
+                </span>
+            </span>
+        }
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    [EditorRequired]
+    public string? Title { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public string? Description { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public int ActiveSinceYear { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public string? LastActivityRelative { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public int PublicNotesCount { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<string> Tags { get; set; } = new List<string>();
+
+}

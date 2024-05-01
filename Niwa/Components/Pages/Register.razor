@@ -1,0 +1,41 @@
+@page "/register"
+@using Niwa.Components.General
+
+<TwoPanelBanner>
+    <BannerLeft>
+        <img src="bonsaiwithflower.svg" alt="Bonsai With Flower"/>
+    </BannerLeft>
+    <BannerRight>
+        <h1>Register</h1>
+        <form>
+            <div>
+                <label for="username">Username</label>
+                <input id="username" type="text"/>
+            </div>
+            <div>
+                <label for="garden-name">Garden name</label>
+                <input id="garden-name" type="text"/>
+            </div>
+            <div>
+                <label for="password">Password</label>
+                <input id="password" type="password"/>
+            </div>
+            <div>
+                <label for="repeat-password">Repeat password</label>
+                <input id="repeat-password" type="password"/>
+            </div>
+        </form>
+        <ActionsContainer>
+            <ActionsLeft>
+                <a href="/login" class="btn-link">I already have an account</a>
+            </ActionsLeft>
+            <ActionsRight>
+                <button>Register</button>
+            </ActionsRight>
+        </ActionsContainer>
+    </BannerRight>
+</TwoPanelBanner>
+
+@code {
+
+}

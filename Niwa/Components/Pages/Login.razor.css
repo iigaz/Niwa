@@ -1,0 +1,16 @@
+h1 {
+    margin: 0;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    row-gap: 1rem;
+    width: 100%;
+}
+
+img {
+    width: 20rem;
+    max-width: 100%;
+    height: auto;
+}

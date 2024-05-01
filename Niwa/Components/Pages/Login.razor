@@ -1,0 +1,39 @@
+@page "/login"
+@using Niwa.Components.General
+
+<TwoPanelBanner>
+    <BannerLeft>
+        <img src="bonsaiwithflower.svg" alt="Bonsai With Flower"/>
+    </BannerLeft>
+    <BannerRight>
+        <h1>Log in</h1>
+        <form>
+            <div>
+                <label for="username">Username</label>
+                <input id="username" type="text"/>
+            </div>
+            <div>
+                <label for="password">Password</label>
+                <input id="password" type="password"/>
+            </div>
+        </form>
+        <ActionsContainer>
+            @* <ActionsLeft> *@
+            @*     <a href="/forgot-password" class="btn-link">I forgot my password</a> *@
+            @* </ActionsLeft> *@
+            @* <ActionsRight> *@
+            @*     <a href="/register" class="btn-link">I don't have an account</a> *@
+            @* </ActionsRight> *@
+            <ActionsLeft>
+                <a href="/register" class="btn-link">I don't have an account</a>
+            </ActionsLeft>
+            <ActionsRight>
+                <button>Log in</button>
+            </ActionsRight>
+        </ActionsContainer>
+    </BannerRight>
+</TwoPanelBanner>
+
+@code {
+
+}

@@ -1,0 +1,46 @@
+@page "/feed"
+@using Niwa.Components.General
+<h1>Welcome back, @Garden!</h1>
+
+<ActionsContainer>
+    <ActionsLeft>
+        <a href="/garden/admin1337" class="btn-link">View garden</a>
+    </ActionsLeft>
+    <ActionsRight>
+        <a href="#" class="btn-link">New plain note</a>
+        <a href="#" class="btn-link">New link note</a>
+        <a href="#" class="btn-link">New file note</a>
+    </ActionsRight>
+</ActionsContainer>
+
+<hr/>
+
+<h3>News</h3>
+
+<ul>
+    <li>Admin1337 updated note: Shower me with divine love</li>
+    <li>Admin1337 added a new note: Shower me with divine love</li>
+    <li class="end">
+        <a href="/feed/news" class="btn-link">Read more</a>
+    </li>
+</ul>
+
+<hr/>
+
+<h3>Collections</h3>
+
+<ul>
+    <li>
+        <a href="/collection/123456">Reading</a>
+    </li>
+    <li>
+        <a href="/collection/123456">Reading</a>
+    </li>
+    <li>
+        <a href="/collection/123456">Reading</a>
+    </li>
+</ul>
+
+@code {
+    private static string Garden => "Admin1337";
+}

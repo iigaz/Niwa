@@ -1,0 +1,18 @@
+<div class="banner-container">
+    <div class="banner-left">
+        @BannerLeft
+    </div>
+    <div class="banner-right">
+        @BannerRight
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public RenderFragment? BannerLeft { get; set; }
+
+    [Parameter]
+    public RenderFragment? BannerRight { get; set; }
+
+}

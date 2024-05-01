@@ -1,0 +1,77 @@
+﻿@page "/"
+@using Niwa.Components.General
+@using Niwa.Components.Cards
+@inject NavigationManager NavigationManager
+
+<TwoPanelBanner>
+    <BannerLeft>
+        <h1>Niwa</h1>
+        <div class="landing-description"><b>Your</b> digital garden.</div>
+        <div class="landing-buttons">
+            <a class="btn" href="/login">Log in</a>
+            <a class="btn" href="/register">Register</a>
+        </div>
+    </BannerLeft>
+    <BannerRight>
+        <img src="asianpotflower.svg" alt="Asian Pot Flower"/>
+    </BannerRight>
+</TwoPanelBanner>
+
+<div class="landing-details">
+    <h3>What is a digital garden?</h3>
+    <figure>
+        <blockquote>
+            <p>A garden is something inbetween a personal blog and a wiki. It&#39;s a collection of evolving notes, essays, and ideas that aren&#39;t strictly organised by their publication date. They&#39;re inherently exploratory – posts are linked through contextual associations. They aren&#39;t refined or complete - posts can be published as half-finished thoughts that will grow and evolve over time. They&#39;re less rigid, less performative, and less perfect than the personal &quot;blogs&quot; we&#39;re used to encountering on the web.</p>
+        </blockquote>
+        <figcaption>
+            Extract from
+            <cite>
+                <a target="_blank" href="https://github.com/MaggieAppleton/digital-gardeners?tab=readme-ov-file#what-is-digital-gardening">MaggieAppleton - Digital Gardeners</a>
+            </cite>
+        </figcaption>
+    </figure>
+</div>
+
+<div>
+    <h2 class="right">Explore the gardens</h2>
+    <div class="cards">
+        <GardenCard
+            Title="Admin1337"
+            Description="The typical latin text used to build websites is so boring.  You know the “Lorem Ipsum …”   Well with this website you can create some “spiritual ipsum” that fits more of the vibe of your site. We want you to feel more aligned with your websites before you have your final text copy ready. Go to our homepage and generate some Spiritual ipsum and then copy that into to your web pages you are building."
+            ActiveSinceYear="2024"
+            LastActivityRelative="1 day ago"
+            PublicNotesCount="5"
+            Tags="@(new[] { "divine", "spiritualipsum", "peter_griffin" })">
+        </GardenCard>
+        <GardenCard
+            Title="Admin1337"
+            Description="The typical latin text used to build websites is so boring.  You know the “Lorem Ipsum …”   Well with this website you can create some “spiritual ipsum” that fits more of the vibe of your site. We want you to feel more aligned with your websites before you have your final text copy ready. Go to our homepage and generate some Spiritual ipsum and then copy that into to your web pages you are building."
+            ActiveSinceYear="2024"
+            LastActivityRelative="1 day ago"
+            PublicNotesCount="5"
+            Tags="@(new[] { "divine", "spiritualipsum", "peter_griffin" })">
+        </GardenCard>
+        <GardenCard
+            Title="Admin1337"
+            Description="The typical latin text used to build websites is so boring.  You know the “Lorem Ipsum …”   Well with this website you can create some “spiritual ipsum” that fits more of the vibe of your site. We want you to feel more aligned with your websites before you have your final text copy ready. Go to our homepage and generate some Spiritual ipsum and then copy that into to your web pages you are building."
+            ActiveSinceYear="2024"
+            LastActivityRelative="1 day ago"
+            PublicNotesCount="5"
+            Tags="@(new[] { "divine", "spiritualipsum", "peter_griffin" })">
+        </GardenCard>
+    </div>
+    <h2>Or <a href="/register">start your own</a>.</h2>
+</div>
+
+@code {
+
+    private static bool LoggedIn => false;
+
+    protected override void OnInitialized()
+    {
+        if (LoggedIn)
+            NavigationManager.NavigateTo("/feed");
+        base.OnInitialized();
+    }
+
+}

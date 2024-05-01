@@ -1,0 +1,18 @@
+<div class="actions-collection">
+    <div class="left-actions">
+        @ActionsLeft
+    </div>
+    <div class="right-actions">
+        @ActionsRight
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public RenderFragment? ActionsLeft { get; set; }
+
+    [Parameter]
+    public RenderFragment? ActionsRight { get; set; }
+
+}
