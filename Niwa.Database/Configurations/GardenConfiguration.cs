@@ -11,5 +11,6 @@ public class GardenConfiguration : IEntityTypeConfiguration<Garden>
         builder.HasOne(garden => garden.User).WithMany(user => user.Gardens);
         builder.HasMany(garden => garden.Subscribers).WithMany(user => user.SubscribedGardens);
         builder.HasMany(garden => garden.Notes).WithOne(note => note.Garden);
+        builder.HasMany(garden => garden.FeaturedNotes).WithMany();
     }
 }

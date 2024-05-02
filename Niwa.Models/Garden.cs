@@ -27,6 +27,8 @@ public class Garden
 
     public ICollection<Note> Notes { get; set; } = new List<Note>();
 
+    public ICollection<Note> FeaturedNotes { get; set; } = new List<Note>();
+
     public DateTime CreatedDateTime { get; set; }
 
     public DateTime UpdatedDateTime { get; set; }
