@@ -97,7 +97,6 @@
     public class LoginDto
     {
         [Length(Lengths.UsernameMin, Lengths.UsernameMax)]
-        [RegularExpression(@"[-a-z0-9_]+")]
         public string Username { get; set; } = null!;
 
         [Length(3, 2048)]

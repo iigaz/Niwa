@@ -1,5 +1,6 @@
 @page "/register"
-@using Niwa.Components.General
+@using System.ComponentModel.DataAnnotations
+@using Niwa.Models.Meta
 
 <TwoPanelBanner>
     <BannerLeft>
@@ -33,5 +34,16 @@
 </TwoPanelBanner>
 
 @code {
+
+    public class RegisterDto
+    {
+        [Length(Lengths.UsernameMin, Lengths.UsernameMax)]
+        [RegularExpression(@"[-a-z0-9_]+")]
+        public string Username { get; set; } = null!;
+
+        [Length(8, 2048)]
+        [RegularExpression("^(?=.*\\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\\w\\d\\s:])([^\\s]){8,2048}$")]
+        public string Password { get; set; } = null!;
+    }
 
 }

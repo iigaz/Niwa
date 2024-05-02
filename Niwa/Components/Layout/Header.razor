@@ -11,9 +11,21 @@
         </b>
     </div>
     <div class="right">
-        <h5>
-            <a href="#">Admin1337</a>
-        </h5>
+        <AuthorizeView>
+            <Authorized>
+                <h5>
+                    <a href="#">@context.User.Identity?.Name</a>
+                </h5>
+            </Authorized>
+            <NotAuthorized>
+                <h5>
+                    <a href="/login">Login</a>
+                </h5>
+                <h5>
+                    <a href="/register">Register</a>
+                </h5>
+            </NotAuthorized>
+        </AuthorizeView>
     </div>
 </header>
 
