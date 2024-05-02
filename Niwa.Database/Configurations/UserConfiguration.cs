@@ -9,7 +9,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
     public void Configure(EntityTypeBuilder<User> builder)
     {
         builder.HasAlternateKey(user => user.Username);
-        builder.HasAlternateKey(user => user.EmailAddress);
+        builder.HasIndex(user => user.EmailAddress).IsUnique();
         builder.HasMany(user => user.Gardens).WithOne(garden => garden.User);
         builder.HasMany(user => user.Notes).WithOne(note => note.User);
         builder.HasMany(user => user.Comments).WithOne(note => note.User);

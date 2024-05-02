@@ -2,7 +2,7 @@ h1 {
     margin: 0;
 }
 
-form {
+.form {
     display: flex;
     flex-direction: column;
     row-gap: 1rem;

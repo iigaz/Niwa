@@ -14,5 +14,11 @@
     align-items: center;
     justify-content: center;
     row-gap: 1rem;
-    min-width: 40%;
+    width: 40%;
+}
+
+@media (width < 720px) {
+    .banner-left, .banner-right {
+        width: unset;
+    }
 }

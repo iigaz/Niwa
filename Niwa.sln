@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Niwa.Database", "Niwa.Datab
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Niwa.Repositories", "Niwa.Repositories\Niwa.Repositories.csproj", "{65DBF8E7-C414-44E4-8685-8CE86C5FC856}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Niwa.Services", "Niwa.Services\Niwa.Services.csproj", "{48437ACC-F17C-4D08-A112-8E44C29DD4F5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{65DBF8E7-C414-44E4-8685-8CE86C5FC856}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65DBF8E7-C414-44E4-8685-8CE86C5FC856}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65DBF8E7-C414-44E4-8685-8CE86C5FC856}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48437ACC-F17C-4D08-A112-8E44C29DD4F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48437ACC-F17C-4D08-A112-8E44C29DD4F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48437ACC-F17C-4D08-A112-8E44C29DD4F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48437ACC-F17C-4D08-A112-8E44C29DD4F5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

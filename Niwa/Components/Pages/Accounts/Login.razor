@@ -1,0 +1,107 @@
+@page "/login"
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using Niwa.Services.AccountsServices.Read
+@using System.Security.Claims
+@using System.ComponentModel.DataAnnotations
+@using Niwa.Models.Meta
+@inject ILoginService LoginService
+@inject ILogger<LoginDto> Logger
+@inject NavigationManager NavigationManager
+
+<HeaderTitle>Login</HeaderTitle>
+
+<TwoPanelBanner>
+    <BannerLeft>
+        <img src="bonsaiwithflower.svg" alt="Bonsai With Flower"/>
+    </BannerLeft>
+    <BannerRight>
+        <h1>Log in</h1>
+        <EditForm EditContext="EditContext" Enhance FormName="LoginForm" OnValidSubmit="Submit">
+            <div class="form">
+                <DataAnnotationsValidator/>
+                <div>
+                    <label>
+                        Username
+                        <InputText @bind-Value="Model!.Username"/>
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        Password
+                        <InputText type="password" @bind-Value="Model!.Password"></InputText>
+                    </label>
+                </div>
+                <ValidationSummary/>
+                <ActionsContainer>
+                    <ActionsLeft>
+                        <a href="/register" class="btn-link">I don't have an account</a>
+                    </ActionsLeft>
+                    <ActionsRight>
+                        <button type="submit">Log in</button>
+                    </ActionsRight>
+                </ActionsContainer>
+            </div>
+        </EditForm>
+    </BannerRight>
+</TwoPanelBanner>
+
+@code {
+
+    [SupplyParameterFromForm]
+    public LoginDto? Model { get; set; }
+
+    private EditContext? EditContext { get; set; }
+
+    private ValidationMessageStore? MessageStore { get; set; }
+
+    [CascadingParameter]
+    public HttpContext? HttpContext { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Model ??= new LoginDto();
+        EditContext ??= new EditContext(Model);
+        MessageStore ??= new ValidationMessageStore(EditContext);
+    }
+
+    private async Task Submit()
+    {
+        var username = Model!.Username;
+        var password = Model!.Password;
+        var user = await LoginService.LoginAsync(username, password);
+        if (user != null && HttpContext != null)
+        {
+            var claims = new List<Claim>
+            {
+                new(
+                    ClaimTypes.Name, user.Username)
+            };
+            foreach (var role in user.Roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role.Label));
+            }
+
+            var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
+
+            await HttpContext.SignInAsync(claimsPrincipal);
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            MessageStore?.Add(() => Model.Username, "Password incorrect or user does not exist.");
+            EditContext?.NotifyValidationStateChanged();
+        }
+    }
+
+    public class LoginDto
+    {
+        [Length(Lengths.UsernameMin, Lengths.UsernameMax)]
+        [RegularExpression(@"[-a-z0-9_]+")]
+        public string Username { get; set; } = null!;
+
+        [Length(3, 2048)]
+        public string Password { get; set; } = null!;
+    }
+
+}
