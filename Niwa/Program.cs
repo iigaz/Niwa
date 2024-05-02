@@ -28,7 +28,6 @@ builder.Services.AddScoped<IRoleReadRepository, RoleReadRepository>();
 builder.Services.AddScoped<IGardenReadRepository, GardenReadRepository>();
 builder.Services.AddScoped<IGardenWriteRepository, GardenWriteRepository>();
 builder.Services.AddScoped<IUserWriteRepository, UserWriteRepository>();
-builder.Services.AddScoped<IUserWriteRepository, UserWriteRepository>();
 builder.Services.AddScoped<IUserReadRepository, UserReadRepository>();
 builder.Services.AddScoped<IUserGardenUnitOfWork, UserGardenUnitOfWork>();
 builder.Services.AddScoped<ILoginService, LoginService>();

@@ -1,6 +1,9 @@
 @page "/register"
+@using Niwa.Services.AccountsServices.Write
 @using System.ComponentModel.DataAnnotations
 @using Niwa.Models.Meta
+@inject IRegisterService RegisterService
+@inject NavigationManager NavigationManager
 
 <TwoPanelBanner>
     <BannerLeft>
@@ -8,32 +11,81 @@
     </BannerLeft>
     <BannerRight>
         <h1>Register</h1>
-        <form>
-            <div>
-                <label for="username">Username</label>
-                <input id="username" type="text"/>
+        <EditForm EditContext="EditContext" Enhance FormName="RegisterForm" OnValidSubmit="Submit">
+            <div class="form">
+                <DataAnnotationsValidator/>
+                <div>
+                    <label>
+                        Username
+                        <InputText @bind-Value="Model!.Username"/>
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        Password
+                        <InputText type="password" @bind-Value="Model!.Password"></InputText>
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        Repeat Password
+                        <InputText type="password" @bind-Value="Model!.RepeatPassword"></InputText>
+                    </label>
+                </div>
+                <ValidationSummary/>
+                <ActionsContainer>
+                    <ActionsLeft>
+                        <a href="/login" class="btn-link">I already have an account</a>
+                    </ActionsLeft>
+                    <ActionsRight>
+                        <button>Register</button>
+                    </ActionsRight>
+                </ActionsContainer>
             </div>
-            <div>
-                <label for="password">Password</label>
-                <input id="password" type="password"/>
-            </div>
-            <div>
-                <label for="repeat-password">Repeat password</label>
-                <input id="repeat-password" type="password"/>
-            </div>
-        </form>
-        <ActionsContainer>
-            <ActionsLeft>
-                <a href="/login" class="btn-link">I already have an account</a>
-            </ActionsLeft>
-            <ActionsRight>
-                <button>Register</button>
-            </ActionsRight>
-        </ActionsContainer>
+        </EditForm>
     </BannerRight>
 </TwoPanelBanner>
 
 @code {
+
+    [SupplyParameterFromForm]
+    public RegisterDto? Model { get; set; }
+
+    private EditContext? EditContext { get; set; }
+
+    private ValidationMessageStore? MessageStore { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Model ??= new RegisterDto();
+        EditContext ??= new EditContext(Model);
+        MessageStore ??= new ValidationMessageStore(EditContext);
+        EditContext.OnValidationRequested += EditContextOnOnValidationRequested;
+    }
+
+    private void EditContextOnOnValidationRequested(object? sender, ValidationRequestedEventArgs e)
+    {
+        if (Model!.RepeatPassword != Model!.Password)
+        {
+            MessageStore?.Add(() => Model.RepeatPassword, "Passwords are not the same.");
+        }
+    }
+
+    private async Task Submit()
+    {
+        var username = Model!.Username;
+        var password = Model!.Password;
+        var validationResults = await RegisterService.RegisterAsync(username, password);
+        if (validationResults != null)
+        {
+            var result = validationResults.First();
+            MessageStore?.Add(() => Model.Username, result.ErrorMessage ?? "Something went wrong.");
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+    }
 
     public class RegisterDto
     {
@@ -44,6 +96,9 @@
         [Length(8, 2048)]
         [RegularExpression("^(?=.*\\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\\w\\d\\s:])([^\\s]){8,2048}$")]
         public string Password { get; set; } = null!;
+
+        [Length(8, 2048)]
+        public string RepeatPassword { get; set; } = null!;
     }
 
 }

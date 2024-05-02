@@ -1,6 +1,8 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Niwa.Services.AccountsServices.Write;
 
 public interface IRegisterService
 {
-    public Task RegisterAsync(string username, string password);
+    public Task<List<ValidationResult>?> RegisterAsync(string username, string password);
 }

@@ -6,7 +6,7 @@ namespace Niwa.Repositories.UserRepositories.Read;
 
 public class UserReadRepository(ApplicationDbContext context) : IUserReadRepository
 {
-    public async Task<User?> LoginAsync(string username, string password, bool withRoles)
+    public async Task<User?> LoginAsync(string username, string password, bool withRoles = false)
     {
         var user = await GetUserByUsernameAsync(username, withRoles);
         return user == null || !User.CheckPassword(user.PasswordHash, password) ? null : user;
@@ -17,7 +17,7 @@ public class UserReadRepository(ApplicationDbContext context) : IUserReadReposit
         return context.Users.SingleOrDefaultAsync(user => user.Id == id);
     }
 
-    public Task<User?> GetUserByUsernameAsync(string username, bool withRoles)
+    public Task<User?> GetUserByUsernameAsync(string username, bool withRoles = false)
     {
         var query = context.Users;
         if (withRoles)
