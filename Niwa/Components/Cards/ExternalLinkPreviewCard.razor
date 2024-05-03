@@ -1,6 +1,8 @@
-<ImageCard CardTitle="@LinkTitle"
-           CardImage="@LinkImage"
+<ImageCard CardImage="@LinkImage"
            CardImageAltText="@LinkTitle">
+    <CardTitle>
+        <a target="_blank" href="@LinkUrl">@LinkTitle</a>
+    </CardTitle>
     <CardDescription>
         <a target="_blank" href="@LinkUrl" class="url">@LinkUrl</a>
         <p class="description-info">@LinkDescription</p>

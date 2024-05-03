@@ -1,43 +1,42 @@
 @using Niwa.Dtos.NoteDtos.Read
 @using Niwa.Models.Enums
-<ImageCard CardTitle="@Model.Title"
-           CardImage="@Model.Image"
+@using Niwa.Services
+@inject ILinkManager LinkManager
+<ImageCard CardImage="@Model.Image"
            CardImageAltText="@Model.Title">
+    <CardTitle>
+        <RegularLink To="@Model.Url">@Model.Title</RegularLink>
+    </CardTitle>
     <CardDescription>
-        <div class="note-container">
-            <p class="description-info">
-                <Markdown Content="@Model.Summary.ReplaceLineEndings(" ")"/>
-            </p>
-            <p class="actions-collection">
-                @if (Model.Garden != null)
-                {
-                    <span class="information">From @Model.Garden</span>
-                }
-                @if (Model.Access != Access.Public)
-                {
-                    <b>@(Model.Access.ToString())</b>
-                }
-                @* @if (Model.Collection != null) *@
-                @* { *@
-                @*     @(" ") *@
-                @*     <span> *@
-                @*         <i>In collection <a href="#">@Model.Collection</a></i> *@
-                @*     </span> *@
-                @* } *@
-                @* @if (Model.RemoveFromCollectionAvailable) *@
-                @* { *@
-                @*     @(" ") *@
-                @*     <a href="#" class="btn-link">Remove from collection</a> *@
-                @* } *@
-            </p>
-            <p class="tags">
-                @foreach (var tag in Model.Tags)
-                {
-                    @(" ")
-                    <a href="#" class="tag">@tag</a>
-                }
-            </p>
+        <div class="description-info">
+            <Markdown Content="@Model.Summary.ReplaceLineEndings(" ")"/>
         </div>
+        <p class="actions-collection">
+            <i>From @Model.Garden</i>
+            @if (Model.Access != Access.Public)
+            {
+                <b>@(Model.Access.ToString())</b>
+            }
+            @* @if (Model.Collection != null) *@
+            @* { *@
+            @*     @(" ") *@
+            @*     <span> *@
+            @*         <i>In collection <a href="#">@Model.Collection</a></i> *@
+            @*     </span> *@
+            @* } *@
+            @* @if (Model.RemoveFromCollectionAvailable) *@
+            @* { *@
+            @*     @(" ") *@
+            @*     <a href="#" class="btn-link">Remove from collection</a> *@
+            @* } *@
+        </p>
+        <p class="tags">
+            @foreach (var tag in Model.Tags)
+            {
+                @(" ")
+                <a href="#" class="tag">@tag</a>
+            }
+        </p>
     </CardDescription>
 </ImageCard>
 

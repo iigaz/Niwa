@@ -12,9 +12,12 @@ public class GardenReadRepository(ApplicationDbContext context) : IGardenReadRep
         return context.Gardens.SingleOrDefaultAsync(garden => garden.Id == id);
     }
 
-    public Task<Garden?> GetFirstByUserIdAsync(Guid id)
+    public Task<Garden?> GetFirstByUserIdAsync(Guid id, bool withFeaturedNotes = false)
     {
-        return context.Gardens.FirstOrDefaultAsync(garden => garden.UserId == id);
+        IQueryable<Garden> query = context.Gardens;
+        if (withFeaturedNotes)
+            query = query.Include(garden => garden.FeaturedNotes).ThenInclude(note => note.Tags);
+        return query.FirstOrDefaultAsync(garden => garden.UserId == id);
     }
 
     public Task<List<Garden>> GetGardensByIdsAsync(List<Guid> ids)

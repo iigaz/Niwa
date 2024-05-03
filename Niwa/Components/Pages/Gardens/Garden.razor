@@ -1,10 +1,12 @@
 @page "/garden/{authorUsername}"
 @using System.Security.Claims
 @using Niwa.Dtos.GardenDtos.Read
+@using Niwa.Services.Converters
 @using Niwa.Services.GardenServices.Read
 @using Niwa.Components.Cards
 @inject NavigationManager NavigationManager
 @inject IGardenReadService GardenReadService
+@inject IGardenToGardenPageConverter GardenToGardenPageConverter
 
 @if (SuccessfullyInitialized)
 {
@@ -76,7 +78,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var garden = await GardenReadService.GetFirstByUsernameAsync(AuthorUsername);
+        var garden = await GardenReadService.GetFirstByUsernameAsync(AuthorUsername, true);
         if (garden == null)
         {
             HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
@@ -87,7 +89,7 @@ else
         var parsed = Guid.TryParse(currentUserId, out var currentUserGuid);
         IsCurrentUserAuthor = parsed && garden.UserId == currentUserGuid;
         if (parsed) IsCurrentUserSubscribed = await GardenReadService.IsUserSubscribedAsync(currentUserGuid, garden);
-        Model = GardenPageDto.From(garden, !IsCurrentUserAuthor);
+        Model = GardenToGardenPageConverter.Convert(garden, !IsCurrentUserAuthor);
         SuccessfullyInitialized = true;
     }
 

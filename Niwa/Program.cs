@@ -8,8 +8,10 @@ using Niwa.Repositories.RoleRepositories.Read;
 using Niwa.Repositories.UnitsOfWork;
 using Niwa.Repositories.UserRepositories.Read;
 using Niwa.Repositories.UserRepositories.Write;
+using Niwa.Services;
 using Niwa.Services.AccountsServices.Read;
 using Niwa.Services.AccountsServices.Write;
+using Niwa.Services.Converters;
 using Niwa.Services.GardenServices.Read;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,6 +36,10 @@ builder.Services.AddScoped<IUserGardenUnitOfWork, UserGardenUnitOfWork>();
 builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<IRegisterService, RegisterService>();
 builder.Services.AddScoped<IGardenReadService, GardenReadService>();
+builder.Services.AddScoped<IShortIdParser, ShortIdParser>();
+builder.Services.AddScoped<ILinkManager, LinkManager>();
+builder.Services.AddScoped<IGardenToGardenPageConverter, GardenToGardenPageConverter>();
+builder.Services.AddScoped<INoteToNoteCardConverter, NoteToNoteCardConverter>();
 
 
 var app = builder.Build();

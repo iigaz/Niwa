@@ -8,12 +8,12 @@ namespace Niwa.Services.GardenServices.Read;
 public class GardenReadService(IGardenReadRepository gardenReadRepository, IUserReadRepository userReadRepository)
     : IGardenReadService
 {
-    public async Task<Garden?> GetFirstByUsernameAsync(string username)
+    public async Task<Garden?> GetFirstByUsernameAsync(string username, bool withFeaturedNotes = false)
     {
         var user = await userReadRepository.GetUserByUsernameAsync(username);
         if (user == null)
             return null;
-        return await gardenReadRepository.GetFirstByUserIdAsync(user.Id);
+        return await gardenReadRepository.GetFirstByUserIdAsync(user.Id, withFeaturedNotes);
     }
 
     public async Task<bool> IsUserSubscribedAsync(Guid userId, Garden garden)

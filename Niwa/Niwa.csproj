@@ -19,6 +19,7 @@
         </PackageReference>
         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.1"/>
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2"/>
+        <PackageReference Include="SluggyUnidecode" Version="2.0.1"/>
         <PackageReference Include="Sqids" Version="3.1.0"/>
     </ItemGroup>
 
