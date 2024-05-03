@@ -1,20 +1,21 @@
+@using Niwa.Dtos.GardenDtos.Read
 <div class="card">
     <h5 class="title">
-        @Title
+        <RegularLink To="@Url">@Model.Title</RegularLink>
     </h5>
     <div class="description">
-        @Description
+        @Model.Description
     </div>
     <div class="footer">
-        <span>Active since: @ActiveSinceYear</span>
-        <span>Last activity: @LastActivityRelative</span>
-        <span>@PublicNotesCount public @(PublicNotesCount == 1 ? "note" : "notes")</span>
-        @if (Tags.Count > 0)
+        <span>Active since: @Model.ActiveSinceYear</span>
+        <span>Last activity: @Model.LastActivityRelative</span>
+        <span>@Model.PublicNotesCount public @(Model.PublicNotesCount == 1 ? "note" : "notes")</span>
+        @if (Model.Tags.Count > 0)
         {
             <span>
                 Popular tags:
                 <span class="tags">
-                    @foreach (var tag in Tags)
+                    @foreach (var tag in Model.Tags)
                     {
                         @(" ")
                         <a href="#" class="tag">@tag</a>
@@ -29,25 +30,8 @@
 
     [Parameter]
     [EditorRequired]
-    public string? Title { get; set; }
+    public GardenCardDto Model { get; set; } = null!;
 
-    [Parameter]
-    [EditorRequired]
-    public string? Description { get; set; }
-
-    [Parameter]
-    [EditorRequired]
-    public int ActiveSinceYear { get; set; }
-
-    [Parameter]
-    [EditorRequired]
-    public string? LastActivityRelative { get; set; }
-
-    [Parameter]
-    [EditorRequired]
-    public int PublicNotesCount { get; set; }
-
-    [Parameter]
-    public IReadOnlyList<string> Tags { get; set; } = new List<string>();
+    private string Url => $"/garden/{Model.UrlId}";
 
 }

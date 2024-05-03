@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Niwa.Models.Enums;
 using Niwa.Models.Meta;
 
 namespace Niwa.Models;
@@ -54,6 +55,11 @@ public class Note
     [Length(Lengths.UrlMin, Lengths.UrlMax)]
     [Url]
     public string? Image { get; set; } = null!;
+
+    /// <summary>
+    ///     Current access type. Fully assembled from the revisions latest version of the content. Used for fast access.
+    /// </summary>
+    public Access Access { get; set; }
 
     public ICollection<Collection> Collections { get; set; } = new List<Collection>();
 

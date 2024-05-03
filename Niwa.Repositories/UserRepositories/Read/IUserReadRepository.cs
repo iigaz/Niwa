@@ -8,5 +8,5 @@ public interface IUserReadRepository
 
     public Task<User?> GetUserByUsernameAsync(string username, bool withRoles = false);
 
-    public Task<User?> GetUserByIdAsync(Guid id);
+    public Task<User?> GetUserByIdAsync(Guid id, bool withSubscribedGardens = false);
 }

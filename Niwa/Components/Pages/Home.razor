@@ -1,7 +1,10 @@
 ﻿@page "/"
-@using Niwa.Components.General
+@using Niwa.Dtos.GardenDtos.Read
+@using Niwa.Services.GardenServices.Read
 @using Niwa.Components.Cards
 @inject NavigationManager NavigationManager
+@inject IGardenReadService GardenReadService
+@inject IConfiguration Configuration
 
 <TwoPanelBanner>
     <BannerLeft>
@@ -33,45 +36,41 @@
 </div>
 
 <div>
-    <h2 class="right">Explore the gardens</h2>
-    <div class="cards">
-        <GardenCard
-            Title="Admin1337"
-            Description="The typical latin text used to build websites is so boring.  You know the “Lorem Ipsum …”   Well with this website you can create some “spiritual ipsum” that fits more of the vibe of your site. We want you to feel more aligned with your websites before you have your final text copy ready. Go to our homepage and generate some Spiritual ipsum and then copy that into to your web pages you are building."
-            ActiveSinceYear="2024"
-            LastActivityRelative="1 day ago"
-            PublicNotesCount="5"
-            Tags="@(new[] { "divine", "spiritualipsum", "peter_griffin" })">
-        </GardenCard>
-        <GardenCard
-            Title="Admin1337"
-            Description="The typical latin text used to build websites is so boring.  You know the “Lorem Ipsum …”   Well with this website you can create some “spiritual ipsum” that fits more of the vibe of your site. We want you to feel more aligned with your websites before you have your final text copy ready. Go to our homepage and generate some Spiritual ipsum and then copy that into to your web pages you are building."
-            ActiveSinceYear="2024"
-            LastActivityRelative="1 day ago"
-            PublicNotesCount="5"
-            Tags="@(new[] { "divine", "spiritualipsum", "peter_griffin" })">
-        </GardenCard>
-        <GardenCard
-            Title="Admin1337"
-            Description="The typical latin text used to build websites is so boring.  You know the “Lorem Ipsum …”   Well with this website you can create some “spiritual ipsum” that fits more of the vibe of your site. We want you to feel more aligned with your websites before you have your final text copy ready. Go to our homepage and generate some Spiritual ipsum and then copy that into to your web pages you are building."
-            ActiveSinceYear="2024"
-            LastActivityRelative="1 day ago"
-            PublicNotesCount="5"
-            Tags="@(new[] { "divine", "spiritualipsum", "peter_griffin" })">
-        </GardenCard>
-    </div>
-    <h2>Or <a href="/register">start your own</a>.</h2>
+    @if (FeaturedGardens.Count > 0)
+    {
+        <h2 class="right">Explore the gardens</h2>
+        <div class="cards">
+            @foreach (var garden in FeaturedGardens)
+            {
+                <GardenCard Model="garden"/>
+            }
+        </div>
+        <h2>Or <a href="/register">start your own</a>.</h2>
+    }
+    else
+    {
+        <h2>Want to try? <a href="/register">Start your own garden</a>.</h2>
+    }
 </div>
 
 @code {
 
-    private static bool LoggedIn => false;
+    [CascadingParameter]
+    public HttpContext HttpContext { get; set; } = null!;
+
+    private List<GardenCardDto> FeaturedGardens { get; set; } = new();
 
     protected override void OnInitialized()
     {
-        if (LoggedIn)
+        if (HttpContext.User.Identity?.IsAuthenticated ?? false)
             NavigationManager.NavigateTo("/feed");
-        base.OnInitialized();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var ids = Configuration.GetSection("FeaturedGardens").Get<List<string>>()?.Select(Guid.Parse) ?? [];
+        var gardens = await GardenReadService.GetGardensWithStatsByIdsAsync(ids.ToList());
+        FeaturedGardens = gardens.Select(GardenCardDto.From).ToList();
     }
 
 }

@@ -1,0 +1,23 @@
+@inject NavigationManager NavigationManager
+
+<RegularLink To="@To" RelativeTo="@RelativeTo" class="btn-link" @attributes="AdditionalAttributes">
+    @ChildContent
+</RegularLink>
+
+@code {
+
+    [Parameter]
+    public string? RelativeTo { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public string To { get; set; } = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+}

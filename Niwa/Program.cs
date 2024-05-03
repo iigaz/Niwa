@@ -10,6 +10,7 @@ using Niwa.Repositories.UserRepositories.Read;
 using Niwa.Repositories.UserRepositories.Write;
 using Niwa.Services.AccountsServices.Read;
 using Niwa.Services.AccountsServices.Write;
+using Niwa.Services.GardenServices.Read;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,7 @@ builder.Services.AddScoped<IUserReadRepository, UserReadRepository>();
 builder.Services.AddScoped<IUserGardenUnitOfWork, UserGardenUnitOfWork>();
 builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<IRegisterService, RegisterService>();
+builder.Services.AddScoped<IGardenReadService, GardenReadService>();
 
 
 var app = builder.Build();

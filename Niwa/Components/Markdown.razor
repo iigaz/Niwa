@@ -1,0 +1,9 @@
+@(new MarkupString(Markdig.Markdown.ToHtml(Content!)))
+
+@code {
+
+    [Parameter]
+    [EditorRequired]
+    public string? Content { get; set; }
+
+}

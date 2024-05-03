@@ -1,9 +1,21 @@
 <PageTitle>@ChildContent - Niwa</PageTitle>
-<SectionContent SectionId="HeaderTitleOutlet.HeaderTitleObject">@ChildContent</SectionContent>
+<SectionContent SectionId="HeaderTitleOutlet.HeaderTitleObject">
+    @if (LinkTo != null)
+    {
+        <a href="@LinkTo">@ChildContent</a>
+    }
+    else
+    {
+        @ChildContent
+    }
+</SectionContent>
 
 @code {
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public string? LinkTo { get; set; }
 
 }

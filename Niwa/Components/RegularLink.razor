@@ -1,0 +1,36 @@
+@inject NavigationManager NavigationManager
+
+<a href="@Joined" @attributes="AdditionalAttributes">@ChildContent</a>
+
+@code {
+
+    private string Joined
+    {
+        get
+        {
+            var uri1 = RelativeTo!.TrimEnd('/');
+            var uri2 = To.TrimStart('/');
+            return $"{uri1}/{uri2}";
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        RelativeTo ??= NavigationManager.BaseUri;
+    }
+
+    [Parameter]
+    public string? RelativeTo { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public string To { get; set; } = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+}

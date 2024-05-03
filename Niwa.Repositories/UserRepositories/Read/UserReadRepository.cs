@@ -12,9 +12,12 @@ public class UserReadRepository(ApplicationDbContext context) : IUserReadReposit
         return user == null || !User.CheckPassword(user.PasswordHash, password) ? null : user;
     }
 
-    public Task<User?> GetUserByIdAsync(Guid id)
+    public Task<User?> GetUserByIdAsync(Guid id, bool withSubscribedGardens = false)
     {
-        return context.Users.SingleOrDefaultAsync(user => user.Id == id);
+        var query = context.Users;
+        if (withSubscribedGardens)
+            query.Include(user => user.SubscribedGardens);
+        return query.SingleOrDefaultAsync(user => user.Id == id);
     }
 
     public Task<User?> GetUserByUsernameAsync(string username, bool withRoles = false)
