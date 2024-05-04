@@ -10,7 +10,10 @@ public class NoteFile
     public Guid NoteId { get; set; }
     public Note Note { get; set; } = null!;
 
+    [Length(Lengths.FilenameMin, Lengths.FilenameMax)]
+    public string Filename { get; set; } = null!;
+
     [Length(Lengths.UrlMin, Lengths.UrlMax)]
     [Url]
-    public string File { get; set; } = null!;
+    public string FileUrl { get; set; } = null!;
 }

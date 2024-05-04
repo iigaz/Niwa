@@ -4,6 +4,8 @@ namespace Niwa.Services;
 
 public interface ILinkManager
 {
-    public string LinkToGarden(Garden garden);
+    public string LinkToGarden(string username);
     public string LinkToNote(Note note);
+    public string LinkToTag(string tag);
+    public string LinkToCollection(Guid id);
 }

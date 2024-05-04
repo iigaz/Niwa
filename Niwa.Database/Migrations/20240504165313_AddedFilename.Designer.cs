@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Niwa.Database;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Niwa.Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240504165313_AddedFilename")]
+    partial class AddedFilename
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -186,10 +189,6 @@ namespace Niwa.Database.Migrations
 
                     b.Property<Guid>("LatestRevisionId")
                         .HasColumnType("uuid");
-
-                    b.Property<string>("ShortId")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<string>("Summary")
                         .IsRequired()
@@ -374,7 +373,7 @@ namespace Niwa.Database.Migrations
                         {
                             Id = new Guid("aaf91a62-1964-46c6-ab36-a95af1486272"),
                             CreatedDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            PasswordHash = "TOtQd+OOYtLwvvwdwph3ovZn9Bz2sCsQ26CG/keH/0g=;po//Xdg4nknQnWe/8XDM3A==",
+                            PasswordHash = "XTYHq+WZNY5kuWe+SkajjkXq+Mzau8eGyFA7/fZAs0M=;MHa3+lpwYT0S+mAzu/p2jg==",
                             UpdatedDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Username = "admin"
                         });

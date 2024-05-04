@@ -3,16 +3,36 @@ using Niwa.Models;
 
 namespace Niwa.Services;
 
-public class LinkManager(IShortIdParser shortIdParser) : ILinkManager
+public class LinkManager : ILinkManager
 {
-    public string LinkToGarden(Garden garden)
+    public string LinkToGarden(string username)
     {
-        return $"/garden/{garden.User.Username}";
+        return $"/garden/{username}";
     }
 
     public string LinkToNote(Note note)
     {
         return
-            $"/garden/{note.User.Username}/{shortIdParser.DateTimeToShortId(note.CreatedDateTime)}/{SlugGenerator.FromTitle(note.Title)}";
+            $"/garden/{note.User.Username}/{note.ShortId}/{SlugGenerator.FromTitle(note.Title)}";
+    }
+
+    public string LinkToTag(string tag)
+    {
+        return $"/tag/{tag}";
+    }
+
+    public string LinkToCollection(Guid id)
+    {
+        return $"/collection/{id}";
+    }
+
+    public string LinkToGarden(Garden garden)
+    {
+        return LinkToGarden(garden.User);
+    }
+
+    public string LinkToGarden(User user)
+    {
+        return LinkToGarden(user.Username);
     }
 }

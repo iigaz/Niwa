@@ -3,7 +3,8 @@ using Niwa.Models;
 
 namespace Niwa.Services.Converters;
 
-public class NoteToNoteCardConverter(ILinkManager linkManager) : INoteToNoteCardConverter
+public class NoteToNoteCardConverter(ILinkManager linkManager, ICollectionToCollectionConverter collectionConverter)
+    : INoteToNoteCardConverter
 {
     public NoteCardQueryDto Convert(Note note)
     {
@@ -14,7 +15,8 @@ public class NoteToNoteCardConverter(ILinkManager linkManager) : INoteToNoteCard
             Garden = note.Garden.Title,
             Summary = note.Summary,
             Access = note.Access,
-            Tags = note.Tags.Select(tag => tag.Tag).ToList(),
+            Tags = note.Tags.Select(tag => tag.Tag)
+                .ToList(),
             Url = linkManager.LinkToNote(note)
         };
     }

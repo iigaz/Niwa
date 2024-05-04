@@ -40,4 +40,10 @@ public static class Lengths
 
     public const int TagMin = 2;
     public const int TagMax = 32;
+
+    public const int FilenameMin = 4;
+    public const int FilenameMax = 512;
+
+    public const int ShortIdMin = 1;
+    public const int ShortIdMax = 10;
 }

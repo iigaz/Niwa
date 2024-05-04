@@ -1,17 +1,23 @@
 @page "/garden/{AuthorUsername}/{NoteShortId}/{NoteSlug?}"
 @using System.Security.Claims
 @using Niwa.Extensions
+@using Niwa.Helpers
 @using Niwa.Models.Enums
 @using Niwa.Services
-@using Niwa.Dtos.GardenDtos
-@using Niwa.Dtos.FileDtos
+@using Niwa.Services.CollectionServices
+@using Niwa.Services.Converters
+@using Niwa.Services.NoteServices
+@using Niwa.Dtos.NoteDtos
 @using System.Globalization
-@inject IShortIdParser ShortIdParser
 @inject NavigationManager NavigationManager
+@inject ILinkManager LinkManager
+@inject INoteQueryService NoteQueryService
+@inject INoteToNotePageConverter NoteToNotePageConverter
+@inject ICollectionQueryService CollectionQueryService
 
 @if (IsSuccessfullyInitialized)
 {
-    <HeaderTitle>@Model.Title - @Model.Garden.Title</HeaderTitle>
+    <HeaderTitle LinkTo="@LinkManager.LinkToGarden(Model.Garden.AuthorUsername)">@Model.Garden.Title</HeaderTitle>
 
     <ActionsContainer>
         <ActionsLeft>
@@ -19,13 +25,20 @@
             {
                 <b>@Model.Access.ToString()</b>
             }
-            @* <span class="actions-collection"> *@
-            @*     <i>In collection</i> *@
-            @*     <a href="#">Reading</a> *@
-            @* </span> *@
+            @if (Model.Collection != null)
+            {
+                <span class="actions-collection">
+                    <i>In collection</i>
+                    <RegularLink To="@LinkManager.LinkToCollection(Model.Collection.Id)">@Model.Collection.Id</RegularLink>
+                </span>
+            }
         </ActionsLeft>
         <ActionsRight>
-            @* <a href="/garden/123456/shower-me-with-divine-love/collection" class="btn-link">Change collection</a> *@
+            <AuthorizeView>
+                <Authorized>
+                    <ActionLink To="collection" RelativeTo="@NavigationManager.Uri">@(Model.Collection == null ? "Add to collection" : "Change collection")</ActionLink>
+                </Authorized>
+            </AuthorizeView>
             <ActionLink To="edit" RelativeTo="@NavigationManager.Uri">Edit</ActionLink>
         </ActionsRight>
     </ActionsContainer>
@@ -62,7 +75,7 @@
                 <span class="inline-list">
                     @foreach (var tag in Model.Tags)
                     {
-                        <span class="tag">@tag</span>
+                        <a href="@LinkManager.LinkToTag(tag)">@tag</a>
                     }
                 </span>
             </div>
@@ -97,7 +110,7 @@ else
 @code {
 
     [Parameter]
-    public NoteTemp Model { get; set; } = null!;
+    public NotePageQueryDto Model { get; set; } = null!;
 
     [Parameter]
     public string AuthorUsername { get; set; } = null!;
@@ -111,34 +124,46 @@ else
     [CascadingParameter]
     public HttpContext HttpContext { get; set; } = null!;
 
-    private bool IsSuccessfullyInitialized { get; } = false;
+    private bool IsSuccessfullyInitialized { get; set; }
 
     private bool IsCurrentUserAuthor { get; set; }
 
-    private bool IsCurrentUserSubscribed { get; }
+    private bool IsCurrentUserSubscribed { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        var createdDateTime = ShortIdParser.ShortIdToDateTime(NoteShortId);
+        var note = await NoteQueryService.GetNoteByUsernameAndShortIdAsync(AuthorUsername, NoteShortId);
+
+        if (note == null)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
 
         var currentUserId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
         var parsed = Guid.TryParse(currentUserId, out var currentUserGuid);
-        // IsCurrentUserAuthor = parsed && garden.UserId == currentUserGuid;
-        // TODO: get note and compare note author to current user
-    }
+        IsCurrentUserAuthor = parsed && note.UserId == currentUserGuid;
 
-    public class NoteTemp
-    {
-        public string Title { get; set; } = null!;
-        public Access Access { get; set; }
-        public GardenLinkInfoQueryDto Garden { get; set; } = null!;
-        public Guid AuthorUserId { get; set; }
-        public string Summary { get; set; } = null!;
-        public string Content { get; set; } = null!;
-        public List<NoteFileQueryDto> Attachments { get; set; } = null!;
-        public List<string> Tags { get; set; } = null!;
-        public DateTime LatestUpdateDateTime { get; set; }
-        public int CommentCount { get; set; }
+        if (note.Access == Access.Private && !IsCurrentUserAuthor)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        var slug = SlugGenerator.FromTitle(note.Title);
+        if (NoteSlug != slug)
+        {
+            NavigationManager.NavigateTo(LinkManager.LinkToNote(note));
+            return;
+        }
+
+        if (parsed) IsCurrentUserSubscribed = await NoteQueryService.IsUserSubscribedAsync(currentUserGuid, note);
+
+        var commentCount = await NoteQueryService.GetCommentCountAsync(note);
+        var collection = parsed ? await CollectionQueryService.GetNoteCollection(currentUserGuid, note) : null;
+
+        IsSuccessfullyInitialized = true;
+        Model = NoteToNotePageConverter.Convert(note, commentCount, collection);
     }
 
 }
