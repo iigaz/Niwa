@@ -7,8 +7,12 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Niwa.Database\Niwa.Database.csproj"/>
         <ProjectReference Include="..\Niwa.Models\Niwa.Models.csproj"/>
-        <ProjectReference Include="..\Niwa.Repositories\Niwa.Repositories.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="UnitsOfWork\"/>
     </ItemGroup>
 
 </Project>

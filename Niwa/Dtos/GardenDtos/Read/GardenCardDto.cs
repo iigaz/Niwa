@@ -1,5 +1,5 @@
 using Niwa.Extensions;
-using Niwa.Services.Entities.GardenEntities.Read;
+using Niwa.Services.GardenServices.Models;
 
 namespace Niwa.Dtos.GardenDtos.Read;
 

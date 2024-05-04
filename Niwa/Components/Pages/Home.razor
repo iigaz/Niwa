@@ -1,9 +1,9 @@
 ﻿@page "/"
 @using Niwa.Dtos.GardenDtos.Read
-@using Niwa.Services.GardenServices.Read
+@using Niwa.Services.GardenServices
 @using Niwa.Components.Cards
 @inject NavigationManager NavigationManager
-@inject IGardenReadService GardenReadService
+@inject IGardenQueryService GardenQueryService
 @inject IConfiguration Configuration
 
 <TwoPanelBanner>
@@ -69,7 +69,7 @@
     protected override async Task OnInitializedAsync()
     {
         var ids = Configuration.GetSection("FeaturedGardens").Get<List<string>>()?.Select(Guid.Parse) ?? [];
-        var gardens = await GardenReadService.GetGardensWithStatsByIdsAsync(ids.ToList());
+        var gardens = await GardenQueryService.GetGardensWithStatsByIdsAsync(ids.ToList());
         FeaturedGardens = gardens.Select(GardenCardDto.From).ToList();
     }
 

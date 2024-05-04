@@ -1,4 +1,7 @@
-@page "/garden/ilnar/MJpnMfk-shower-me-with-divine-love"
+@page "/garden/{AuthorUsername}/{NoteShortId}/{NoteSlug?}"
+@using Niwa.Dtos.NoteDtos.Read
+@using Niwa.Services
+@inject IShortIdParser ShortIdParser
 
 <PageTitle>Shower me with Divine Love - Garden</PageTitle>
 
@@ -71,5 +74,26 @@
 </div>
 
 @code {
+
+    [Parameter]
+    public NotePageDto Model { get; set; } = null!;
+
+    [Parameter]
+    public string AuthorUsername { get; set; } = null!;
+
+    [Parameter]
+    public string NoteShortId { get; set; } = null!;
+
+    [Parameter]
+    public string? NoteSlug { get; set; }
+
+    private bool IsSuccessfullyInitialized { get; set; } = false;
+
+    protected override Task OnInitializedAsync()
+    {
+        var createdDateTime = ShortIdParser.ShortIdToDateTime(NoteShortId);
+
+        return base.OnInitializedAsync();
+    }
 
 }

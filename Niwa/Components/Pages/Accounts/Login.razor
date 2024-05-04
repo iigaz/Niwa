@@ -1,11 +1,11 @@
 @page "/login"
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Authentication.Cookies
-@using Niwa.Services.AccountsServices.Read
+@using Niwa.Services.LoginServices
 @using System.Security.Claims
 @using System.ComponentModel.DataAnnotations
 @using Niwa.Models.Meta
-@inject ILoginService LoginService
+@inject ILoginQueryService LoginQueryService
 @inject ILogger<LoginDto> Logger
 @inject NavigationManager NavigationManager
 
@@ -69,7 +69,7 @@
     {
         var username = Model!.Username;
         var password = Model!.Password;
-        var user = await LoginService.LoginAsync(username, password, true);
+        var user = await LoginQueryService.LoginAsync(username, password, true);
         if (user != null && HttpContext != null)
         {
             var claims = new List<Claim>

@@ -2,10 +2,10 @@
 @using System.Security.Claims
 @using Niwa.Dtos.GardenDtos.Read
 @using Niwa.Services.Converters
-@using Niwa.Services.GardenServices.Read
+@using Niwa.Services.GardenServices
 @using Niwa.Components.Cards
 @inject NavigationManager NavigationManager
-@inject IGardenReadService GardenReadService
+@inject IGardenQueryService GardenQueryService
 @inject IGardenToGardenPageConverter GardenToGardenPageConverter
 
 @if (SuccessfullyInitialized)
@@ -78,7 +78,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var garden = await GardenReadService.GetFirstByUsernameAsync(AuthorUsername, true);
+        var garden = await GardenQueryService.GetFirstByUsernameAsync(AuthorUsername, true);
         if (garden == null)
         {
             HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
@@ -88,7 +88,7 @@ else
         var currentUserId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
         var parsed = Guid.TryParse(currentUserId, out var currentUserGuid);
         IsCurrentUserAuthor = parsed && garden.UserId == currentUserGuid;
-        if (parsed) IsCurrentUserSubscribed = await GardenReadService.IsUserSubscribedAsync(currentUserGuid, garden);
+        if (parsed) IsCurrentUserSubscribed = await GardenQueryService.IsUserSubscribedAsync(currentUserGuid, garden);
         Model = GardenToGardenPageConverter.Convert(garden, !IsCurrentUserAuthor);
         SuccessfullyInitialized = true;
     }

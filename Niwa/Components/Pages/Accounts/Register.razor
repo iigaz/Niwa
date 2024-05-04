@@ -1,8 +1,8 @@
 @page "/register"
-@using Niwa.Services.AccountsServices.Write
+@using Niwa.Services.RegistrationServices
 @using System.ComponentModel.DataAnnotations
 @using Niwa.Models.Meta
-@inject IRegisterService RegisterService
+@inject IRegistrationCommandService RegistrationCommandService
 @inject NavigationManager NavigationManager
 
 <TwoPanelBanner>
@@ -75,7 +75,7 @@
     {
         var username = Model!.Username;
         var password = Model!.Password;
-        var validationResults = await RegisterService.RegisterAsync(username, password);
+        var validationResults = await RegistrationCommandService.RegisterAsync(username, password);
         if (validationResults != null)
         {
             var result = validationResults.First();

@@ -2,17 +2,15 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Niwa.Components;
 using Niwa.Database;
-using Niwa.Repositories.GardenRepositories.Read;
-using Niwa.Repositories.GardenRepositories.Write;
-using Niwa.Repositories.RoleRepositories.Read;
-using Niwa.Repositories.UnitsOfWork;
-using Niwa.Repositories.UserRepositories.Read;
-using Niwa.Repositories.UserRepositories.Write;
 using Niwa.Services;
-using Niwa.Services.AccountsServices.Read;
-using Niwa.Services.AccountsServices.Write;
 using Niwa.Services.Converters;
-using Niwa.Services.GardenServices.Read;
+using Niwa.Services.GardenRepositories;
+using Niwa.Services.GardenServices;
+using Niwa.Services.LoginServices;
+using Niwa.Services.RegistrationServices;
+using Niwa.Services.RoleRepositories;
+using Niwa.Services.UnitsOfWork;
+using Niwa.Services.UserRepositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,15 +25,15 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Database")));
-builder.Services.AddScoped<IRoleReadRepository, RoleReadRepository>();
-builder.Services.AddScoped<IGardenReadRepository, GardenReadRepository>();
-builder.Services.AddScoped<IGardenWriteRepository, GardenWriteRepository>();
-builder.Services.AddScoped<IUserWriteRepository, UserWriteRepository>();
-builder.Services.AddScoped<IUserReadRepository, UserReadRepository>();
+builder.Services.AddScoped<IGardenCommandRepository, GardenCommandRepository>();
+builder.Services.AddScoped<IGardenQueryRepository, GardenQueryRepository>();
+builder.Services.AddScoped<IGardenQueryService, GardenQueryService>();
+builder.Services.AddScoped<ILoginQueryService, LoginQueryService>();
+builder.Services.AddScoped<IRegistrationCommandService, RegistrationCommandService>();
+builder.Services.AddScoped<IRoleQueryRepository, RoleQueryRepository>();
+builder.Services.AddScoped<IUserCommandRepository, UserCommandRepository>();
+builder.Services.AddScoped<IUserQueryRepository, UserQueryRepository>();
 builder.Services.AddScoped<IUserGardenUnitOfWork, UserGardenUnitOfWork>();
-builder.Services.AddScoped<ILoginService, LoginService>();
-builder.Services.AddScoped<IRegisterService, RegisterService>();
-builder.Services.AddScoped<IGardenReadService, GardenReadService>();
 builder.Services.AddScoped<IShortIdParser, ShortIdParser>();
 builder.Services.AddScoped<ILinkManager, LinkManager>();
 builder.Services.AddScoped<IGardenToGardenPageConverter, GardenToGardenPageConverter>();
