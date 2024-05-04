@@ -1,8 +1,8 @@
 using Niwa.Models.Enums;
 
-namespace Niwa.Dtos.NoteDtos.Read;
+namespace Niwa.Dtos.NoteDtos;
 
-public class NoteCardDto
+public class NoteCardQueryDto
 {
     public string Url { get; set; } = null!;
 

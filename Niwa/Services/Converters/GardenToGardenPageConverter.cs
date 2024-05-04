@@ -1,4 +1,4 @@
-using Niwa.Dtos.GardenDtos.Read;
+using Niwa.Dtos.GardenDtos;
 using Niwa.Models;
 using Niwa.Models.Enums;
 
@@ -6,9 +6,9 @@ namespace Niwa.Services.Converters;
 
 public class GardenToGardenPageConverter(INoteToNoteCardConverter noteCardConverter) : IGardenToGardenPageConverter
 {
-    public GardenPageDto Convert(Garden garden, bool onlyPublicNotes = true)
+    public GardenPageQueryDto Convert(Garden garden, bool onlyPublicNotes = true)
     {
-        return new GardenPageDto
+        return new GardenPageQueryDto
         {
             Title = garden.Title,
             Summary = garden.Summary,

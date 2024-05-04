@@ -1,4 +1,4 @@
-@using Niwa.Dtos.NoteDtos.Read
+@using Niwa.Dtos.NoteDtos
 @using Niwa.Models.Enums
 @using Niwa.Services
 @inject ILinkManager LinkManager
@@ -44,6 +44,6 @@
 
     [Parameter]
     [EditorRequired]
-    public NoteCardDto Model { get; set; } = null!;
+    public NoteCardQueryDto Model { get; set; } = null!;
 
 }

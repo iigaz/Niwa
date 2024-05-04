@@ -69,7 +69,7 @@
     {
         var username = Model!.Username;
         var password = Model!.Password;
-        var user = await LoginQueryService.LoginAsync(username, password, true);
+        var user = await LoginQueryService.LoginAsync(username, password);
         if (user != null && HttpContext != null)
         {
             var claims = new List<Claim>

@@ -4,5 +4,5 @@ namespace Niwa.Services.LoginServices;
 
 public interface ILoginQueryService
 {
-    public Task<User?> LoginAsync(string username, string password, bool withRoles = false);
+    public Task<User?> LoginAsync(string username, string password);
 }

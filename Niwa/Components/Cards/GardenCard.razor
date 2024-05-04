@@ -1,4 +1,4 @@
-@using Niwa.Dtos.GardenDtos.Read
+@using Niwa.Dtos.GardenDtos
 <div class="card">
     <h5 class="title">
         <RegularLink To="@Url">@Model.Title</RegularLink>
@@ -30,8 +30,8 @@
 
     [Parameter]
     [EditorRequired]
-    public GardenCardDto Model { get; set; } = null!;
+    public GardenCardQueryDto Model { get; set; } = null!;
 
-    private string Url => $"/garden/{Model.UrlId}";
+    private string Url => $"/garden/{Model.AuthorUsername}";
 
 }

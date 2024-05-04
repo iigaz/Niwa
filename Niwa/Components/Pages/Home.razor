@@ -1,5 +1,5 @@
 ﻿@page "/"
-@using Niwa.Dtos.GardenDtos.Read
+@using Niwa.Dtos.GardenDtos
 @using Niwa.Services.GardenServices
 @using Niwa.Components.Cards
 @inject NavigationManager NavigationManager
@@ -58,7 +58,7 @@
     [CascadingParameter]
     public HttpContext HttpContext { get; set; } = null!;
 
-    private List<GardenCardDto> FeaturedGardens { get; set; } = new();
+    private List<GardenCardQueryDto> FeaturedGardens { get; set; } = new();
 
     protected override void OnInitialized()
     {
@@ -70,7 +70,7 @@
     {
         var ids = Configuration.GetSection("FeaturedGardens").Get<List<string>>()?.Select(Guid.Parse) ?? [];
         var gardens = await GardenQueryService.GetGardensWithStatsByIdsAsync(ids.ToList());
-        FeaturedGardens = gardens.Select(GardenCardDto.From).ToList();
+        FeaturedGardens = gardens.Select(GardenCardQueryDto.From).ToList();
     }
 
 }

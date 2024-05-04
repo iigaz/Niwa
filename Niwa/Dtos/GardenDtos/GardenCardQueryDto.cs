@@ -1,13 +1,13 @@
 using Niwa.Extensions;
 using Niwa.Services.GardenServices.Models;
 
-namespace Niwa.Dtos.GardenDtos.Read;
+namespace Niwa.Dtos.GardenDtos;
 
-public class GardenCardDto
+public class GardenCardQueryDto
 {
     public string? Title { get; set; }
 
-    public string UrlId { get; set; }
+    public string AuthorUsername { get; set; } = null!;
 
     public string? Description { get; set; }
 
@@ -19,12 +19,12 @@ public class GardenCardDto
 
     public ICollection<string> Tags { get; set; } = new List<string>();
 
-    public static GardenCardDto From(GardenWithStats garden)
+    public static GardenCardQueryDto From(GardenWithStats garden)
     {
-        return new GardenCardDto
+        return new GardenCardQueryDto
         {
             Title = garden.Title,
-            UrlId = garden.User.Username,
+            AuthorUsername = garden.User.Username,
             Description = garden.Summary,
             ActiveSinceYear = garden.CreatedDateTime.Year,
             LastActivityRelative = garden.UpdatedDateTime.TimeAgo(),

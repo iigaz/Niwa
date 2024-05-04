@@ -1,6 +1,6 @@
 @page "/garden/{authorUsername}"
 @using System.Security.Claims
-@using Niwa.Dtos.GardenDtos.Read
+@using Niwa.Dtos.GardenDtos
 @using Niwa.Services.Converters
 @using Niwa.Services.GardenServices
 @using Niwa.Components.Cards
@@ -68,7 +68,7 @@ else
     [CascadingParameter]
     public HttpContext HttpContext { get; set; } = null!;
 
-    private GardenPageDto Model { get; set; } = new();
+    private GardenPageQueryDto Model { get; set; } = new();
 
     private bool SuccessfullyInitialized { get; set; }
 

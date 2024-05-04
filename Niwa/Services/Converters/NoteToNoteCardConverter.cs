@@ -1,13 +1,13 @@
-using Niwa.Dtos.NoteDtos.Read;
+using Niwa.Dtos.NoteDtos;
 using Niwa.Models;
 
 namespace Niwa.Services.Converters;
 
 public class NoteToNoteCardConverter(ILinkManager linkManager) : INoteToNoteCardConverter
 {
-    public NoteCardDto Convert(Note note)
+    public NoteCardQueryDto Convert(Note note)
     {
-        return new NoteCardDto
+        return new NoteCardQueryDto
         {
             Title = note.Title,
             Image = note.Image,
