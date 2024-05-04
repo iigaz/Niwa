@@ -49,6 +49,7 @@ builder.Services.AddScoped<INoteQueryService, NoteQueryService>();
 builder.Services.AddScoped<ICollectionQueryRepository, CollectionQueryRepository>();
 builder.Services.AddScoped<ICollectionQueryService, CollectionQueryService>();
 builder.Services.AddScoped<ICollectionToCollectionConverter, CollectionToCollectionConverter>();
+builder.Services.AddScoped<IGardenCommandService, GardenCommandService>();
 
 
 var app = builder.Build();

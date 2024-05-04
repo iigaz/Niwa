@@ -17,4 +17,5 @@ public class NotePageQueryDto
     public DateTime LatestUpdateDateTime { get; set; }
     public int CommentCount { get; set; }
     public CollectionQueryDto? Collection { get; set; }
+    public bool Featured { get; set; }
 }

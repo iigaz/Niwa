@@ -1,8 +1,109 @@
-@page "/garden/edit"
-@using Niwa.Components.Forms
-<h5>Edit garden</h5>
-<GardenEditForm/>
+@page "/garden/{AuthorUsername}/edit"
+@using System.Security.Claims
+@using Niwa.Services.GardenServices
+@using Niwa.Services
+@using System.ComponentModel.DataAnnotations
+@using Niwa.Models.Meta
+@inject IGardenCommandService GardenCommandService
+@inject IGardenQueryService GardenQueryService
+@inject NavigationManager NavigationManager
+@inject ILinkManager LinkManager
+
+@if (SuccessfullyInitialized)
+{
+    <h5>Edit garden</h5>
+    <EditForm Enhance EditContext="EditContext" FormName="EditGarden" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator/>
+        <div>
+            <table>
+                <colgroup>
+                    <col/>
+                    <col style="width: 100%"/>
+                </colgroup>
+                <tr>
+                    <th>
+                        <label>Title</label>
+                    </th>
+                    <td>
+                        <InputText @bind-Value="Model!.Title"></InputText>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        <label>Summary</label>
+                    </th>
+                    <td>
+                        <InputTextArea @bind-Value="Model!.Summary" rows="5"></InputTextArea>
+                    </td>
+                </tr>
+            </table>
+            <ValidationSummary/>
+        </div>
+        <div class="footer">
+            <button>Submit</button>
+        </div>
+    </EditForm>
+}
+else
+{
+    <Error/>
+}
 
 @code {
+
+    [Parameter]
+    public string AuthorUsername { get; set; } = null!;
+
+    [CascadingParameter]
+    public HttpContext HttpContext { get; set; } = null!;
+
+    [SupplyParameterFromForm]
+    public EditGardenCommand? Model { get; set; }
+
+    private EditContext? EditContext { get; set; }
+
+    private ValidationMessageStore? MessageStore { get; set; }
+
+    private Models.Garden? _garden;
+
+    private bool SuccessfullyInitialized { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _garden = await GardenQueryService.GetFirstByUsernameAsync(AuthorUsername);
+        var currentUserId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var parsed = Guid.TryParse(currentUserId, out var currentUserGuid);
+        if (_garden == null || (parsed && _garden.UserId != currentUserGuid))
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        Model ??= new EditGardenCommand
+        {
+            Title = _garden.Title,
+            Summary = _garden.Summary
+        };
+        EditContext ??= new EditContext(Model);
+        MessageStore ??= new ValidationMessageStore(EditContext);
+        SuccessfullyInitialized = true;
+    }
+
+    private async Task OnValidSubmit()
+    {
+        if (_garden == null || Model == null)
+            return;
+        await GardenCommandService.UpdateAsync(_garden.Id, Model.Title, Model.Summary);
+        NavigationManager.NavigateTo(LinkManager.LinkToGarden(AuthorUsername));
+    }
+
+    public class EditGardenCommand
+    {
+        [Length(Lengths.GardenTitleMin, Lengths.GardenTitleMax)]
+        public string Title { get; set; } = "";
+
+        [Length(Lengths.GardenSummaryMin, Lengths.GardenSummaryMax)]
+        public string Summary { get; set; } = "";
+    }
 
 }

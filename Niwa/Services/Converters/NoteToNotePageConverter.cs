@@ -8,7 +8,7 @@ public class NoteToNotePageConverter(
     ICollectionToCollectionConverter collectionConverter)
     : INoteToNotePageConverter
 {
-    public NotePageQueryDto Convert(Note note, int commentCount, Collection? collection)
+    public NotePageQueryDto Convert(Note note, int commentCount, Collection? collection, bool featured)
     {
         return new NotePageQueryDto
         {
@@ -21,7 +21,8 @@ public class NoteToNotePageConverter(
             Tags = note.Tags.Select(tag => tag.Tag).ToList(),
             LatestUpdateDateTime = note.LatestRevision.CreatedDateTime,
             CommentCount = commentCount,
-            Collection = collectionConverter.Convert(collection)
+            Collection = collectionConverter.Convert(collection),
+            Featured = featured
         };
     }
 }

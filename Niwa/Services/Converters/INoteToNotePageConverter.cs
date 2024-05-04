@@ -5,5 +5,5 @@ namespace Niwa.Services.Converters;
 
 public interface INoteToNotePageConverter
 {
-    public NotePageQueryDto Convert(Note note, int commentCount, Collection? collection);
+    public NotePageQueryDto Convert(Note note, int commentCount, Collection? collection, bool featured);
 }

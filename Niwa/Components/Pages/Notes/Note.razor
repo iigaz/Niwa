@@ -6,6 +6,7 @@
 @using Niwa.Services
 @using Niwa.Services.CollectionServices
 @using Niwa.Services.Converters
+@using Niwa.Services.GardenServices
 @using Niwa.Services.NoteServices
 @using Niwa.Dtos.NoteDtos
 @using System.Globalization
@@ -14,6 +15,8 @@
 @inject INoteQueryService NoteQueryService
 @inject INoteToNotePageConverter NoteToNotePageConverter
 @inject ICollectionQueryService CollectionQueryService
+@inject IGardenQueryService GardenQueryService
+@inject IGardenCommandService GardenCommandService
 
 @if (IsSuccessfullyInitialized)
 {
@@ -37,9 +40,26 @@
             <AuthorizeView>
                 <Authorized>
                     <ActionLink To="collection" RelativeTo="@NavigationManager.Uri">@(Model.Collection == null ? "Add to collection" : "Change collection")</ActionLink>
+                    @if (IsCurrentUserAuthor)
+                    {
+                        <ActionLink To="edit" RelativeTo="@NavigationManager.Uri">Edit</ActionLink>
+                        @if (Model.Featured)
+                        {
+                            <form data-enhance method="post" @onsubmit="() => FeatureNote(false)" @formname="UnfeatureNote">
+                                <AntiforgeryToken/>
+                                <button class="btn-link">Stop featuring this note</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form data-enhance method="post" @onsubmit="() => FeatureNote(true)" @formname="FeatureNote">
+                                <AntiforgeryToken/>
+                                <button class="btn-link">Feature this note</button>
+                            </form>
+                        }
+                    }
                 </Authorized>
             </AuthorizeView>
-            <ActionLink To="edit" RelativeTo="@NavigationManager.Uri">Edit</ActionLink>
         </ActionsRight>
     </ActionsContainer>
 
@@ -112,6 +132,8 @@ else
     [Parameter]
     public NotePageQueryDto Model { get; set; } = null!;
 
+    private Models.Note? _note;
+
     [Parameter]
     public string AuthorUsername { get; set; } = null!;
 
@@ -132,9 +154,9 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var note = await NoteQueryService.GetNoteByUsernameAndShortIdAsync(AuthorUsername, NoteShortId);
+        _note = await NoteQueryService.GetNoteByUsernameAndShortIdAsync(AuthorUsername, NoteShortId);
 
-        if (note == null)
+        if (_note == null)
         {
             HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
             return;
@@ -142,28 +164,37 @@ else
 
         var currentUserId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
         var parsed = Guid.TryParse(currentUserId, out var currentUserGuid);
-        IsCurrentUserAuthor = parsed && note.UserId == currentUserGuid;
+        IsCurrentUserAuthor = parsed && _note.UserId == currentUserGuid;
 
-        if (note.Access == Access.Private && !IsCurrentUserAuthor)
+        if (_note.Access == Access.Private && !IsCurrentUserAuthor)
         {
             HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
             return;
         }
 
-        var slug = SlugGenerator.FromTitle(note.Title);
+        var slug = SlugGenerator.FromTitle(_note.Title);
         if (NoteSlug != slug)
         {
-            NavigationManager.NavigateTo(LinkManager.LinkToNote(note));
+            NavigationManager.NavigateTo(LinkManager.LinkToNote(_note));
             return;
         }
 
-        if (parsed) IsCurrentUserSubscribed = await NoteQueryService.IsUserSubscribedAsync(currentUserGuid, note);
+        if (parsed) IsCurrentUserSubscribed = await NoteQueryService.IsUserSubscribedAsync(currentUserGuid, _note);
 
-        var commentCount = await NoteQueryService.GetCommentCountAsync(note);
-        var collection = parsed ? await CollectionQueryService.GetNoteCollection(currentUserGuid, note) : null;
+        var commentCount = await NoteQueryService.GetCommentCountAsync(_note);
+        var collection = parsed ? await CollectionQueryService.GetNoteCollection(currentUserGuid, _note) : null;
+        var featured = await GardenQueryService.DoesFeatureNoteAsync(_note);
 
         IsSuccessfullyInitialized = true;
-        Model = NoteToNotePageConverter.Convert(note, commentCount, collection);
+        Model = NoteToNotePageConverter.Convert(_note, commentCount, collection, featured);
+    }
+
+    private async Task FeatureNote(bool feature)
+    {
+        if (_note == null)
+            return;
+        await GardenCommandService.FeatureNote(_note.GardenId, _note.Id, feature);
+        Model.Featured = feature;
     }
 
 }

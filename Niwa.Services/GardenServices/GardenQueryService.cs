@@ -29,6 +29,13 @@ public class GardenQueryService(IGardenQueryRepository gardenQueryRepository, IU
         return (await Task.WhenAll(gardens.Select(AddStatsToGarden))).ToList();
     }
 
+    public Task<bool> DoesFeatureNoteAsync(Note note)
+    {
+        return gardenQueryRepository.GetGardens()
+            .Include(garden => garden.FeaturedNotes)
+            .AnyAsync(garden => garden.Id == note.GardenId && garden.FeaturedNotes.Contains(note));
+    }
+
     private async Task<GardenWithStats> AddStatsToGarden(Garden garden)
     {
         var count = await gardenQueryRepository.GetPublicNoteCountAsync(garden.Id);

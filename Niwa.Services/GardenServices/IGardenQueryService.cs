@@ -8,4 +8,5 @@ public interface IGardenQueryService
     public Task<Garden?> GetFirstByUsernameAsync(string username, bool withFeaturedNotes = false);
     public Task<bool> IsUserSubscribedAsync(Guid userId, Garden garden);
     public Task<List<GardenWithStats>> GetGardensWithStatsByIdsAsync(List<Guid> ids);
+    public Task<bool> DoesFeatureNoteAsync(Note note);
 }
