@@ -1,0 +1,74 @@
+@page "/garden/{AuthorUsername}/new/plain"
+@using System.Security.Claims
+@using Niwa.Dtos.NoteDtos
+@using Niwa.Models.Enums
+@using Niwa.Services
+@using Niwa.Services.GardenServices
+@using Niwa.Components.Forms
+@inject IGardenQueryService GardenQueryService
+@inject NavigationManager NavigationManager
+@inject ILinkManager LinkManager
+
+@if (IsSuccessfullyInitialized)
+{
+    <AuthorizeView>
+        <Authorized>
+            <HeaderTitle LinkTo="@LinkManager.LinkToGarden(AuthorUsername)" Page="Create plain note">@_garden?.Title</HeaderTitle>
+            <h5>Create plain note</h5>
+            <NoteEditForm Garden="_garden" UserId="_userId" Model="Model"/>
+        </Authorized>
+    </AuthorizeView>
+}
+else
+{
+    <Error/>
+}
+
+@code {
+
+    [SupplyParameterFromForm]
+    public EditNoteCommandDto? Model { get; set; }
+
+    [Parameter]
+    public string AuthorUsername { get; set; } = null!;
+
+    [CascadingParameter]
+    public HttpContext HttpContext { get; set; } = null!;
+
+    private bool IsSuccessfullyInitialized { get; set; }
+
+    private bool IsCurrentUserAuthor { get; set; }
+
+    private Models.Garden? _garden;
+
+    private Guid _userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _garden = await GardenQueryService.GetFirstByUsernameAsync(AuthorUsername);
+
+        var currentUserId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var parsed = Guid.TryParse(currentUserId, out _userId);
+        IsCurrentUserAuthor = _garden != null && parsed && _garden.UserId == _userId;
+
+        if (_garden == null || !IsCurrentUserAuthor)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        if (!IsCurrentUserAuthor)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        IsSuccessfullyInitialized = true;
+        Model ??= new EditNoteCommandDto
+        {
+            Access = Access.Public,
+            Title = "New plain note"
+        };
+    }
+
+}

@@ -11,6 +11,7 @@
 
 @if (IsSuccessfullyInitialized)
 {
+    <HeaderTitle LinkTo="@LinkManager.LinkToNote(_note!)" Page="Edit note">@_note!.Title</HeaderTitle>
     <h5>Edit note</h5>
     <NoteEditForm Model="Model" NoteId="_note?.Id" RedirectTo="@LinkManager.LinkToNote(_note!)"/>
 }

@@ -1,71 +1,101 @@
 @page "/feed"
+@using System.Security.Claims
 @using Niwa.Dtos.GardenDtos
+@using Niwa.Services
 @using Niwa.Services.GardenServices
 @using Niwa.Components.Cards
 @inject IGardenQueryService GardenQueryService
 @inject IConfiguration Configuration
-<h1>Welcome back, JLKSJDFKLSJFD!</h1>
+@inject ILinkManager LinkManager
 
-<ActionsContainer>
-    <ActionsLeft>
-        <a href="/garden/admin1337" class="btn-link">View garden</a>
-    </ActionsLeft>
-    <ActionsRight>
-        <a href="#" class="btn-link">New plain note</a>
-        <a href="#" class="btn-link">New link note</a>
-        <a href="#" class="btn-link">New file note</a>
-    </ActionsRight>
-</ActionsContainer>
+@if (IsSuccessfullyInitialized)
+{
+    <AuthorizeView>
+        <Authorized>
+            <h1>Welcome back, @(context.User.Identity!.Name)!</h1>
+            <ActionsContainer>
+                <ActionsLeft>
+                    <ActionLink To="@LinkManager.LinkToGarden(context.User.Identity!.Name!)">View garden</ActionLink>
+                </ActionsLeft>
+                <ActionsRight>
+                    <ActionLink To="@LinkManager.LinkToNewNote(context.User.Identity!.Name!, "plain")">New plain note</ActionLink>
+                    <ActionLink To="@LinkManager.LinkToNewNote(context.User.Identity!.Name!, "link")">New link note</ActionLink>
+                    <ActionLink To="@LinkManager.LinkToNewNote(context.User.Identity!.Name!, "file")">New file note</ActionLink>
+                </ActionsRight>
+            </ActionsContainer>
 
-<hr/>
+            <hr/>
 
-<h3>News</h3>
+            <h3>News</h3>
 
-<ul>
-    <li>Admin1337 updated note: Shower me with divine love</li>
-    <li>Admin1337 added a new note: Shower me with divine love</li>
-    <li class="end">
-        <a href="/feed/news" class="btn-link">Read more</a>
-    </li>
-</ul>
+            <ul>
+                <li>Admin1337 updated note: Shower me with divine love</li>
+                <li>Admin1337 added a new note: Shower me with divine love</li>
+                <li class="end">
+                    <a href="/feed/news" class="btn-link">Read more</a>
+                </li>
+            </ul>
 
-<hr/>
+            <hr/>
 
-<h3>Collections</h3>
+            <h3>Collections</h3>
 
-<ul>
-    <li>
-        <a href="/collection/123456">Reading</a>
-    </li>
-    <li>
-        <a href="/collection/123456">Reading</a>
-    </li>
-    <li>
-        <a href="/collection/123456">Reading</a>
-    </li>
-</ul>
+            <ul>
+                <li>
+                    <a href="/collection/123456">Reading</a>
+                </li>
+                <li>
+                    <a href="/collection/123456">Reading</a>
+                </li>
+                <li>
+                    <a href="/collection/123456">Reading</a>
+                </li>
+            </ul>
 
-<hr/>
+            <hr/>
 
-<h3>Featured Gardens</h3>
+            <h3>Featured Gardens</h3>
 
-<div class="cards">
-    @foreach (var garden in FeaturedGardens)
-    {
-        <GardenCard Model="garden"/>
-    }
-</div>
+            <div class="cards">
+                @foreach (var garden in FeaturedGardens)
+                {
+                    <GardenCard Model="garden"/>
+                }
+            </div>
+        </Authorized>
+    </AuthorizeView>
+}
+else
+{
+    <Error/>
+}
 
 @code {
     // private static string Garden => "Admin1337";
 
+    private Guid _userId;
+
+    [CascadingParameter]
+    public HttpContext HttpContext { get; set; } = null!;
+
     private List<GardenCardQueryDto> FeaturedGardens { get; set; } = new();
+
+    private bool IsSuccessfullyInitialized { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        var currentUserId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var parsed = Guid.TryParse(currentUserId, out _userId);
+        if (!parsed)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return;
+        }
+
         var ids = Configuration.GetSection("Niwa:FeaturedGardens").Get<List<string>>()?.Select(Guid.Parse) ?? [];
         var gardens = await GardenQueryService.GetGardensWithStatsByIdsAsync(ids.ToList());
         FeaturedGardens = gardens.Select(GardenCardQueryDto.From).ToList();
+        IsSuccessfullyInitialized = true;
     }
 
 }

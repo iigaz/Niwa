@@ -10,6 +10,11 @@ public class LinkManager : ILinkManager
         return $"/garden/{username}";
     }
 
+    public string LinkToNewNote(string username, string variant)
+    {
+        return LinkToGarden(username) + "/new/" + variant;
+    }
+
     public string LinkToNote(Note note)
     {
         return

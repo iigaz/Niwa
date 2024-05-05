@@ -18,7 +18,7 @@ public class NoteCommandService(
     IConfiguration configuration,
     IGardenCommandRepository gardenCommandRepository) : INoteCommandService
 {
-    public async Task<bool> CreateAsync(CreateNoteCommand noteCommand)
+    public async Task<Note?> CreateAsync(CreateNoteCommand noteCommand)
     {
         var matches = new Regex(@"!\[.*?\]\((.*?)\)")
             .Matches(noteCommand.Content);
@@ -26,7 +26,7 @@ public class NoteCommandService(
         var tags = noteCommand.Tags.Split(' ');
         if (tags.Any(tag =>
                 tag.Length is > Lengths.TagMax or < Lengths.TagMin || !Regex.IsMatch(tag, "[-a-z0-9_\\+]+")))
-            return false;
+            return null;
         var createdDateTime = DateTime.UtcNow;
         var revisionId = Guid.NewGuid();
         var revision = new NoteRevision
@@ -43,15 +43,16 @@ public class NoteCommandService(
             CreatedDateTime = createdDateTime
         };
         var noteId = Guid.NewGuid();
+        var shortId = new SqidsEncoder<long>(new SqidsOptions
+        {
+            Alphabet = configuration.GetSection("Sqids:Alphabet").Get<string>() ??
+                       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        }).Encode(
+            ((DateTimeOffset)createdDateTime).ToUnixTimeSeconds());
         var note = new Note
         {
             Id = noteId,
-            ShortId = new SqidsEncoder<long>(new SqidsOptions
-            {
-                Alphabet = configuration.GetSection("Sqids:Alphabet").Get<string>() ??
-                           "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-            }).Encode(
-                ((DateTimeOffset)createdDateTime).ToUnixTimeSeconds()),
+            ShortId = shortId,
             UserId = noteCommand.UserId,
             LatestRevisionId = revisionId,
             LatestRevision = revision,
@@ -67,7 +68,7 @@ public class NoteCommandService(
         };
         await noteCommandRepository.CreateAsync(note, revision);
         await gardenCommandRepository.UpdateAsync(noteCommand.Garden);
-        return true;
+        return note;
     }
 
     public async Task<bool> UpdateAsync(UpdateNoteCommand noteCommand)

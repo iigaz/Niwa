@@ -1,6 +1,7 @@
-@using Niwa.Dtos.NoteDtos
+@using Niwa.Extensions
 @using Niwa.Models.Enums
 @using Niwa.Services
+@using Niwa.Dtos.NoteDtos
 @inject ILinkManager LinkManager
 <ImageCard CardImage="@Model.Image"
            CardImageAltText="@Model.Title">
@@ -15,15 +16,8 @@
             <i>From @Model.Garden</i>
             @if (Model.Access != Access.Public)
             {
-                <b>@(Model.Access.ToString())</b>
+                <b>@(Model.Access.GetName())</b>
             }
-            @* @if (Model.Collection != null) *@
-            @* { *@
-            @*     @(" ") *@
-            @*     <span> *@
-            @*         <i>In collection <a href="#">@Model.Collection</a></i> *@
-            @*     </span> *@
-            @* } *@
             @* @if (Model.RemoveFromCollectionAvailable) *@
             @* { *@
             @*     @(" ") *@

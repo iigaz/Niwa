@@ -1,11 +1,14 @@
 @using Niwa.Extensions
+@using Niwa.Models
 @using Niwa.Models.Enums
+@using Niwa.Services
 @using Niwa.Services.NoteServices
 @using Niwa.Services.NoteServices.Models
 @using Niwa.Dtos.NoteDtos
 @using Niwa.Dtos.FileDtos
 @inject INoteCommandService NoteCommandService
 @inject NavigationManager NavigationManager
+@inject ILinkManager LinkManager
 <EditForm EditContext="EditContext" Enhance OnValidSubmit="OnValidSubmit" FormName="EditNote">
     <DataAnnotationsValidator/>
     <div>
@@ -85,6 +88,12 @@
     public Guid? NoteId { get; set; }
 
     [Parameter]
+    public Guid? UserId { get; set; }
+
+    [Parameter]
+    public Garden? Garden { get; set; }
+
+    [Parameter]
     public string? RedirectTo { get; set; }
 
     private EditContext? EditContext { get; set; }
@@ -114,6 +123,31 @@
             if (success && RedirectTo != null)
                 NavigationManager.NavigateTo(RedirectTo);
             if (!success)
+            {
+                MessageStore?.Add(() => Model.Tags, "Something went wrong. Please ensure your tags are within 32 characters and contain only small latin letters and symbols '-', '_' or '+'.");
+                EditContext?.NotifyValidationStateChanged();
+            }
+        }
+
+        if (NoteId == null && Model != null)
+        {
+            var note = await NoteCommandService.CreateAsync(new CreateNoteCommand
+            {
+                UserId = UserId!.Value,
+                Garden = Garden!,
+                Title = Model.Title,
+                Summary = Model.Summary,
+                Content = Model.Content,
+                Access = Model.Access,
+                Tags = Model.Tags
+            });
+            if (note != null && RedirectTo != null)
+                NavigationManager.NavigateTo(RedirectTo);
+            if (note != null)
+            {
+                NavigationManager.NavigateTo(LinkManager.LinkToNote(note));
+            }
+            else
             {
                 MessageStore?.Add(() => Model.Tags, "Something went wrong. Please ensure your tags are within 32 characters and contain only small latin letters and symbols '-', '_' or '+'.");
                 EditContext?.NotifyValidationStateChanged();
