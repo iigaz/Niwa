@@ -26,7 +26,7 @@
         <ActionsLeft>
             @if (Model.Access != Access.Public)
             {
-                <b>@Model.Access.ToString()</b>
+                <b>@Model.Access.GetName()</b>
             }
             @if (Model.Collection != null)
             {
