@@ -7,6 +7,9 @@ namespace Niwa.Dtos.NoteDtos;
 
 public class EditNoteCommandDto
 {
+    [Length(Lengths.UrlMin, Lengths.UrlMax)]
+    public string Url { get; set; } = "";
+
     [Length(Lengths.NoteTitleMin, Lengths.NoteTitleMax)]
     public string Title { get; set; } = "";
 

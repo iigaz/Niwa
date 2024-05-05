@@ -1,15 +1,17 @@
+@using OpenGraphNet.Metadata
 @using Niwa.Extensions
 @using Niwa.Models
 @using Niwa.Models.Enums
 @using Niwa.Services
 @using Niwa.Services.NoteServices
 @using Niwa.Services.NoteServices.Models
+@using OpenGraphNet
 @using Niwa.Dtos.NoteDtos
 @using Niwa.Dtos.FileDtos
 @inject INoteCommandService NoteCommandService
 @inject NavigationManager NavigationManager
 @inject ILinkManager LinkManager
-<EditForm EditContext="EditContext" Enhance OnValidSubmit="OnValidSubmit" FormName="EditNote">
+<EditForm EditContext="EditContext" Enhance OnSubmit="OnSubmit" FormName="EditNote">
     <DataAnnotationsValidator/>
     <div>
         <table>
@@ -17,30 +19,50 @@
                 <col/>
                 <col style="width: 100%"/>
             </colgroup>
-            <tr>
-                <th>
-                    <label>Title</label>
-                </th>
-                <td>
-                    <InputText @bind-Value="Model!.Title"/>
-                </td>
-            </tr>
-            <tr>
-                <th>
-                    <label>Summary</label>
-                </th>
-                <td>
-                    <InputTextArea @bind-Value="Model!.Summary" rows="5"></InputTextArea>
-                </td>
-            </tr>
-            <tr>
-                <th>
-                    <label>Tags</label>
-                </th>
-                <td>
-                    <InputText class="tag tag-input" @bind-Value="Model!.Tags"></InputText>
-                </td>
-            </tr>
+            @if (NoteVariant == Variant.Link)
+            {
+                <tr>
+                    <th>
+                        <label>Link</label>
+                    </th>
+                    <td>
+                        <InputText type="url" required @bind-Value="Model!.Url"/>
+                    </td>
+                </tr>
+                <tr>
+                    <th></th>
+                    <td>
+                        <span class="information">Other fields will be filled automatically.</span>
+                    </td>
+                </tr>
+            }
+            else
+            {
+                <tr>
+                    <th>
+                        <label>Title</label>
+                    </th>
+                    <td>
+                        <InputText @bind-Value="Model!.Title"/>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        <label>Summary</label>
+                    </th>
+                    <td>
+                        <InputTextArea @bind-Value="Model!.Summary" rows="5"></InputTextArea>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        <label>Tags</label>
+                    </th>
+                    <td>
+                        <InputText class="tag tag-input" @bind-Value="Model!.Tags"></InputText>
+                    </td>
+                </tr>
+            }
             <tr>
                 <th>
                     <label>Access</label>
@@ -56,23 +78,26 @@
             </tr>
         </table>
     </div>
-    <div>
-        <div class="content-header">
-            <span class="information">Supports markdown.</span><button type="button">Upload image</button>
+    @if (NoteVariant != Variant.Link)
+    {
+        <div>
+            <div class="content-header">
+                <span class="information">Supports markdown.</span><button type="button">Upload image</button>
+            </div>
+            <InputTextArea rows="10" @bind-Value="Model!.Content"></InputTextArea>
         </div>
-        <InputTextArea rows="10" @bind-Value="Model!.Content"></InputTextArea>
-    </div>
-    <div>
-        <h5>Attachments</h5><InputFile multiple></InputFile>
-        <ul>
-            @foreach (var attachment in Model!.Files ?? new List<NoteFileQueryDto>())
-            {
-                <li>
-                    <a href="@attachment.FileUrl">@attachment.Filename</a>&emsp;<a href="#" class="btn-link">Remove</a>
-                </li>
-            }
-        </ul>
-    </div>
+        <div>
+            <h5>Attachments</h5><InputFile multiple></InputFile>
+            <ul>
+                @foreach (var attachment in Model!.Files ?? new List<NoteFileQueryDto>())
+                {
+                    <li>
+                        <a href="@attachment.FileUrl">@attachment.Filename</a>&emsp;<a href="#" class="btn-link">Remove</a>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
     <ValidationSummary/>
     <div class="footer">
         <button type="submit">Submit</button>
@@ -96,6 +121,9 @@
     [Parameter]
     public string? RedirectTo { get; set; }
 
+    [Parameter]
+    public Variant NoteVariant { get; set; }
+
     private EditContext? EditContext { get; set; }
 
     private ValidationMessageStore? MessageStore { get; set; }
@@ -107,8 +135,41 @@
         MessageStore ??= new ValidationMessageStore(EditContext);
     }
 
-    private async Task OnValidSubmit()
+    public enum Variant
     {
+        Plain,
+        Link
+    }
+
+    private async Task OnSubmit()
+    {
+        if (NoteVariant == Variant.Link && Model != null)
+        {
+            try
+            {
+                var graph = await OpenGraph.ParseUrlAsync(Model.Url);
+                var title = graph.Title;
+                var link = graph.Url?.ToString() ?? Model.Url;
+                var image = graph.Image?.ToString();
+                var imageAlt = graph.Metadata["og:image:alt"].Value();
+                var description = graph.Metadata["og:description"].Value();
+                var tags = string.Join(' ', graph.Metadata["og:article:tag"]);
+                Model.Title = title;
+                Model.Summary = $"{description}";
+                Model.Content = $"[{title}]({link})" + (image != null ? $"\n\n![{imageAlt}]({image})" : "");
+                Model.Tags = tags;
+            }
+            catch
+            {
+                MessageStore?.Add(() => Model.Url, "Something went wrong. Try creating a plain note.");
+                EditContext?.NotifyValidationStateChanged();
+            }
+        }
+
+        var isValid = EditContext?.Validate() ?? false;
+
+        if (!isValid)
+            return;
         if (NoteId != null && Model != null)
         {
             var success = await NoteCommandService.UpdateAsync(new UpdateNoteCommand

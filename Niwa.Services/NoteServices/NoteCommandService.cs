@@ -23,7 +23,8 @@ public class NoteCommandService(
         var matches = new Regex(@"!\[.*?\]\((.*?)\)")
             .Matches(noteCommand.Content);
         var image = matches.Count > 0 ? matches[0].Groups[1].Value : null;
-        var tags = noteCommand.Tags.Split(' ');
+        var tags = noteCommand.Tags.Split(' ',
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (tags.Any(tag =>
                 tag.Length is > Lengths.TagMax or < Lengths.TagMin || !Regex.IsMatch(tag, "[-a-z0-9_\\+]+")))
             return null;
@@ -81,7 +82,8 @@ public class NoteCommandService(
         if (originalNote == null)
             throw new ArgumentNullException();
 
-        var tags = noteCommand.Tags.Split(' ');
+        var tags = noteCommand.Tags
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (tags.Any(tag =>
                 tag.Length is > Lengths.TagMax or < Lengths.TagMin || !Regex.IsMatch(tag, "[-a-z0-9_\\+]+")))
             return false;

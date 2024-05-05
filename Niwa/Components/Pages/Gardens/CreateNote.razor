@@ -1,4 +1,4 @@
-@page "/garden/{AuthorUsername}/new/plain"
+@page "/garden/{AuthorUsername}/new/{NoteVariant}"
 @using System.Security.Claims
 @using Niwa.Dtos.NoteDtos
 @using Niwa.Models.Enums
@@ -15,7 +15,7 @@
         <Authorized>
             <HeaderTitle LinkTo="@LinkManager.LinkToGarden(AuthorUsername)" Page="Create plain note">@_garden?.Title</HeaderTitle>
             <h5>Create plain note</h5>
-            <NoteEditForm Garden="_garden" UserId="_userId" Model="Model"/>
+            <NoteEditForm Garden="_garden" UserId="_userId" Model="Model" NoteVariant="Variant"/>
         </Authorized>
     </AuthorizeView>
 }
@@ -32,6 +32,11 @@ else
     [Parameter]
     public string AuthorUsername { get; set; } = null!;
 
+    [Parameter]
+    public string NoteVariant { get; set; } = null!;
+
+    private NoteEditForm.Variant Variant { get; set; }
+
     [CascadingParameter]
     public HttpContext HttpContext { get; set; } = null!;
 
@@ -45,6 +50,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        Variant = NoteVariant switch
+        {
+            "link" => NoteEditForm.Variant.Link,
+            _ => NoteEditForm.Variant.Plain
+        };
         _garden = await GardenQueryService.GetFirstByUsernameAsync(AuthorUsername);
 
         var currentUserId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -67,7 +77,7 @@ else
         Model ??= new EditNoteCommandDto
         {
             Access = Access.Public,
-            Title = "New plain note"
+            Title = $"New {NoteVariant} note"
         };
     }
 
