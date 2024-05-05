@@ -4,6 +4,7 @@ using Fossil;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Niwa.Models;
+using Niwa.Models.Meta;
 using Niwa.Services.GardenRepositories;
 using Niwa.Services.NoteRepositories;
 using Niwa.Services.NoteServices.Models;
@@ -17,13 +18,15 @@ public class NoteCommandService(
     IConfiguration configuration,
     IGardenCommandRepository gardenCommandRepository) : INoteCommandService
 {
-    public async Task CreateAsync(CreateNoteCommand noteCommand)
+    public async Task<bool> CreateAsync(CreateNoteCommand noteCommand)
     {
         var matches = new Regex(@"!\[.*?\]\((.*?)\)")
             .Matches(noteCommand.Content);
-        if (matches.Count == 0)
-            return;
-        var image = matches[0].Groups[1].Value;
+        var image = matches.Count > 0 ? matches[0].Groups[1].Value : null;
+        var tags = noteCommand.Tags.Split(' ');
+        if (tags.Any(tag =>
+                tag.Length is > Lengths.TagMax or < Lengths.TagMin || !Regex.IsMatch(tag, "[-a-z0-9_\\+]+")))
+            return false;
         var createdDateTime = DateTime.UtcNow;
         var revisionId = Guid.NewGuid();
         var revision = new NoteRevision
@@ -39,9 +42,10 @@ public class NoteCommandService(
             PreviousRevisionId = null,
             CreatedDateTime = createdDateTime
         };
+        var noteId = Guid.NewGuid();
         var note = new Note
         {
-            Id = Guid.NewGuid(),
+            Id = noteId,
             ShortId = new SqidsEncoder<long>(new SqidsOptions
             {
                 Alphabet = configuration.GetSection("Sqids:Alphabet").Get<string>() ??
@@ -57,15 +61,16 @@ public class NoteCommandService(
             Content = noteCommand.Content,
             Image = image,
             Access = noteCommand.Access,
-            Tags = noteCommand.Tags,
+            Tags = tags.Select(tag => new NoteTag { NoteId = noteId, Tag = tag }).ToList(),
             Files = noteCommand.Files,
             CreatedDateTime = createdDateTime
         };
         await noteCommandRepository.CreateAsync(note, revision);
         await gardenCommandRepository.UpdateAsync(noteCommand.Garden);
+        return true;
     }
 
-    public async Task UpdateAsync(UpdateNoteCommand noteCommand)
+    public async Task<bool> UpdateAsync(UpdateNoteCommand noteCommand)
     {
         var matches = new Regex(@"!\[.*?\]\((.*?)\)")
             .Matches(noteCommand.Content);
@@ -74,6 +79,11 @@ public class NoteCommandService(
             .SingleOrDefaultAsync(note => note.Id == noteCommand.Id);
         if (originalNote == null)
             throw new ArgumentNullException();
+
+        var tags = noteCommand.Tags.Split(' ');
+        if (tags.Any(tag =>
+                tag.Length is > Lengths.TagMax or < Lengths.TagMin || !Regex.IsMatch(tag, "[-a-z0-9_\\+]+")))
+            return false;
 
         var (titleDelta, rewriteTitle) = GetDelta(originalNote.Title, noteCommand.Title);
         var (summaryDelta, rewriteSummary) = GetDelta(originalNote.Summary, noteCommand.Summary);
@@ -94,14 +104,16 @@ public class NoteCommandService(
             PreviousRevisionId = originalNote.LatestRevisionId,
             CreatedDateTime = DateTime.UtcNow
         };
+        originalNote.Access = noteCommand.Access;
         originalNote.Title = noteCommand.Title;
         originalNote.Summary = noteCommand.Summary;
         originalNote.Content = noteCommand.Content;
         originalNote.Image = image;
-        originalNote.Tags = noteCommand.Tags;
+        originalNote.Tags = tags.Select(tag => new NoteTag { NoteId = originalNote.Id, Tag = tag }).ToList();
         originalNote.Files = noteCommand.Files;
         await noteCommandRepository.UpdateAsync(originalNote, revision);
         await gardenCommandRepository.UpdateAsync(originalNote.Garden);
+        return true;
     }
 
     private static (string?, bool) GetDelta(string s1, string s2)

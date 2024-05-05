@@ -12,7 +12,7 @@
 @if (IsSuccessfullyInitialized)
 {
     <h5>Edit note</h5>
-    <NoteEditForm Model="Model" NoteId="_note?.Id"/>
+    <NoteEditForm Model="Model" NoteId="_note?.Id" RedirectTo="@LinkManager.LinkToNote(_note!)"/>
 }
 else
 {
@@ -79,7 +79,8 @@ else
             Title = _note.Title,
             Summary = _note.Summary,
             Content = _note.Content,
-            Access = _note.Access
+            Access = _note.Access,
+            Tags = string.Join(' ', _note.Tags.Select(tag => tag.Tag))
         };
     }
 

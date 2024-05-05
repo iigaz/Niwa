@@ -5,6 +5,7 @@
 @using Niwa.Dtos.NoteDtos
 @using Niwa.Dtos.FileDtos
 @inject INoteCommandService NoteCommandService
+@inject NavigationManager NavigationManager
 <EditForm Model="Model" Enhance OnValidSubmit="OnValidSubmit" FormName="EditNote">
     <DataAnnotationsValidator/>
     <div>
@@ -83,6 +84,9 @@
     [Parameter]
     public Guid? NoteId { get; set; }
 
+    [Parameter]
+    public string? RedirectTo { get; set; }
+
     private async Task OnValidSubmit()
     {
         if (NoteId != null && Model != null)
@@ -93,8 +97,11 @@
                 Title = Model.Title,
                 Summary = Model.Summary,
                 Content = Model.Content,
-                Access = Model!.Access
+                Access = Model.Access,
+                Tags = Model.Tags
             });
+            if (RedirectTo != null)
+                NavigationManager.NavigateTo(RedirectTo);
         }
     }
 

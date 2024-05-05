@@ -20,7 +20,7 @@ public class UpdateNoteCommand
 
     public Access Access { get; set; }
 
-    public ICollection<NoteTag> Tags { get; set; } = new List<NoteTag>();
+    public string Tags { get; set; } = "";
 
     public ICollection<NoteFile> Files { get; set; } = new List<NoteFile>();
 }
