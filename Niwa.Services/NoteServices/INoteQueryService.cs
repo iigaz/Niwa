@@ -9,4 +9,6 @@ public interface INoteQueryService
     public Task<int> GetCommentCountAsync(Note note);
 
     public Task<bool> IsUserSubscribedAsync(Guid userId, Note note);
+    public Task<Note?> GetNoteSnapshotAsync(Note note, Guid startingRevisionId);
+    public Task<List<NoteRevision>> GetNoteRevisionsAsync(Guid noteId);
 }

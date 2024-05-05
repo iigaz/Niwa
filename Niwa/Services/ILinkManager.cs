@@ -9,4 +9,6 @@ public interface ILinkManager
     public string LinkToNote(Note note);
     public string LinkToTag(string tag);
     public string LinkToCollection(Guid id);
+    public string LinkToSnapshot(Note note, string snapshotId);
+    public string LinkToHistory(Note note);
 }

@@ -101,7 +101,7 @@ public class NoteCommandService(
             TitleRewritten = rewriteTitle,
             SummaryDelta = rewriteSummary ? noteCommand.Summary : summaryDelta,
             SummaryRewritten = rewriteSummary,
-            Access = noteCommand.Access,
+            Access = originalNote.Access == noteCommand.Access ? null : noteCommand.Access,
             ContentDelta = rewriteContent ? noteCommand.Content : contentDelta,
             ContentRewritten = rewriteContent,
             PreviousRevisionId = originalNote.LatestRevisionId,

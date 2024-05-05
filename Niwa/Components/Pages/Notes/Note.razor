@@ -20,7 +20,10 @@
 
 @if (IsSuccessfullyInitialized)
 {
-    <HeaderTitle LinkTo="@LinkManager.LinkToGarden(Model.Garden.AuthorUsername)">@Model.Garden.Title</HeaderTitle>
+    <PageTitle>@_note!.Title - @Model.Garden.Title</PageTitle>
+    <HeaderTitle>
+        <RegularLink To="@LinkManager.LinkToGarden(Model.Garden.AuthorUsername)">@Model.Garden.Title</RegularLink>
+    </HeaderTitle>
 
     <ActionsContainer>
         <ActionsLeft>

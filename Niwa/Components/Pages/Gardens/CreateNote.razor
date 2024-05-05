@@ -13,8 +13,11 @@
 {
     <AuthorizeView>
         <Authorized>
-            <HeaderTitle LinkTo="@LinkManager.LinkToGarden(AuthorUsername)" Page="Create plain note">@_garden?.Title</HeaderTitle>
-            <h5>Create plain note</h5>
+            <PageTitle>Create note - @_garden?.Title</PageTitle>
+            <HeaderTitle>
+                <RegularLink To="@LinkManager.LinkToGarden(AuthorUsername)">@_garden?.Title</RegularLink>
+            </HeaderTitle>
+            <h5>Create note</h5>
             <NoteEditForm Garden="_garden" UserId="_userId" Model="Model" NoteVariant="Variant"/>
         </Authorized>
     </AuthorizeView>

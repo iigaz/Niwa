@@ -32,4 +32,14 @@ public class NoteQueryService(INoteQueryRepository noteQueryRepository, IUserQue
         var user = await userQueryRepository.GetUsers().SingleOrDefaultAsync(user => user.Id == userId);
         return user != null && user.SubscribedNotes.Any(n => n.Id == note.Id);
     }
+
+    public Task<Note?> GetNoteSnapshotAsync(Note note, Guid startingRevisionId)
+    {
+        return noteQueryRepository.GetNoteSnapshotAsync(note, startingRevisionId);
+    }
+
+    public Task<List<NoteRevision>> GetNoteRevisionsAsync(Guid noteId)
+    {
+        return noteQueryRepository.GetNoteRevisionsAsync(noteId);
+    }
 }

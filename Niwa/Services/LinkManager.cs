@@ -31,6 +31,16 @@ public class LinkManager : ILinkManager
         return $"/collection/{id}";
     }
 
+    public string LinkToSnapshot(Note note, string snapshotId)
+    {
+        return LinkToNote(note) + "/snapshot/" + snapshotId;
+    }
+
+    public string LinkToHistory(Note note)
+    {
+        return LinkToNote(note) + "/history";
+    }
+
     public string LinkToGarden(Garden garden)
     {
         return LinkToGarden(garden.User);

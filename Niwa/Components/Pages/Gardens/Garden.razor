@@ -1,17 +1,20 @@
 @page "/garden/{authorUsername}"
 @using System.Security.Claims
 @using Niwa.Dtos.GardenDtos
+@using Niwa.Services
 @using Niwa.Services.Converters
 @using Niwa.Services.GardenServices
 @using Niwa.Components.Cards
 @inject NavigationManager NavigationManager
+@inject ILinkManager LinkManager
 @inject IGardenQueryService GardenQueryService
 @inject IGardenToGardenPageConverter GardenToGardenPageConverter
 
 @if (SuccessfullyInitialized)
 {
-    <HeaderTitle LinkTo="@NavigationManager.Uri">
-        @Model.Title
+    <PageTitle>@Model.Title</PageTitle>
+    <HeaderTitle>
+        <RegularLink To="@LinkManager.LinkToGarden(AuthorUsername)">@Model.Title</RegularLink>
     </HeaderTitle>
     <h1>@Model.Title</h1>
     <ActionsContainer>

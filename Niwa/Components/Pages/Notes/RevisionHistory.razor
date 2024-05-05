@@ -1,47 +1,137 @@
-@page "/garden/123456/shower-me-with-divine-love/history"
-<h5>Revision history</h5>
+@page "/garden/{AuthorUsername}/{NoteShortId}/{NoteSlug?}/history"
+@using System.Security.Claims
+@using System.Text
+@using Niwa.Extensions
+@using Niwa.Helpers
+@using Niwa.Models
+@using Niwa.Models.Enums
+@using Niwa.Services
+@using Niwa.Services.NoteServices
+@inject ILinkManager LinkManager
+@inject INoteQueryService NoteQueryService
+@inject NavigationManager NavigationManager
+@if (IsSuccessfullyInitialized)
+{
+    <PageTitle>Revision history - @_note!.Title</PageTitle>
+    <HeaderTitle>
+        <RegularLink To="@LinkManager.LinkToNote(_note!)">@_note!.Title</RegularLink>
+    </HeaderTitle>
+    <h5>Revision history</h5>
 
+    <table>
+        @foreach (var revision in Model)
+        {
+            <tr>
+                <td>
+                    <span title="@revision.CreatedDateTime">@revision.CreatedDateTime.TimeAgo()</span>
+                </td>
 
-<table>
-    <tr>
-        <td>
-            (latest)
-            <span title="2024-02-23 16:23:00">5 minutes ago</span>
-        </td>
-        <td>Edited title, summary, tags and content</td>
-        <td>
-            <a href="#" class="btn-link">diff</a>
-        </td>
-        <td>
-            <a href="#" class="btn-link">view snapshot</a>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <span title="2024-02-23 16:23:00">6 minutes ago</span>
-        </td>
-        <td>Edited title</td>
-        <td>
-            <a href="#" class="btn-link">diff</a>
-        </td>
-        <td>
-            <a href="#" class="btn-link">view snapshot</a>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <span title="2024-02-23 16:23:00">1 month ago</span>
-        </td>
-        <td>Created "Shower me with Divine Love"</td>
-        <td>
-            <a href="#" class="btn-link">diff</a>
-        </td>
-        <td>
-            <a href="#" class="btn-link">view snapshot</a>
-        </td>
-    </tr>
-</table>
+                @if (revision.PreviousRevisionId != null)
+                {
+                    <td>@GetEdited(revision)</td>
+                }
+                else if (revision.TitleRewritten)
+                {
+                    <td>Created &ldquo;@revision.TitleDelta&rdquo;.</td>
+                }
+
+                @* <td> *@
+                @*     <a href="#" class="btn-link">Diff</a> *@
+                @* </td> *@
+                <td>
+                    <ActionLink To="@LinkManager.LinkToSnapshot(_note!, revision.Id.ToString())">View snapshot</ActionLink>
+                </td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <Error/>
+}
 
 @code {
+
+    [Parameter]
+    public List<NoteRevision> Model { get; set; } = null!;
+
+    private Models.Note? _note;
+
+    [Parameter]
+    public string AuthorUsername { get; set; } = null!;
+
+    [Parameter]
+    public string NoteShortId { get; set; } = null!;
+
+    [Parameter]
+    public string? NoteSlug { get; set; }
+
+    [CascadingParameter]
+    public HttpContext HttpContext { get; set; } = null!;
+
+    private bool IsSuccessfullyInitialized { get; set; }
+
+    private bool IsCurrentUserAuthor { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _note = await NoteQueryService.GetNoteByUsernameAndShortIdAsync(AuthorUsername, NoteShortId);
+
+        if (_note == null)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        var currentUserId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var parsed = Guid.TryParse(currentUserId, out var currentUserGuid);
+        IsCurrentUserAuthor = parsed && _note.UserId == currentUserGuid;
+
+        if (_note.Access == Access.Private && !IsCurrentUserAuthor)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        var slug = SlugGenerator.FromTitle(_note.Title);
+        if (NoteSlug != slug)
+        {
+            NavigationManager.NavigateTo(LinkManager.LinkToHistory(_note));
+            return;
+        }
+
+        Model = await NoteQueryService.GetNoteRevisionsAsync(_note.Id);
+        IsSuccessfullyInitialized = true;
+    }
+
+    private static string GetEdited(NoteRevision revision)
+    {
+        var changed = new List<string>();
+        if (revision.TitleDelta != null)
+            changed.Add("title");
+        if (revision.SummaryDelta != null)
+            changed.Add("summary");
+        if (revision.ContentDelta != null)
+            changed.Add("content");
+        if (revision.Access != null)
+            changed.Add($"access ({revision.Access.GetName()})");
+        var result = new StringBuilder();
+        if (changed.Count == 0)
+            result.Append("Nothing changed.");
+        else if (changed.Count == 1)
+            result.Append($"Changed {changed[0]}.");
+        else
+        {
+            result.Append($"Changed {changed[0]}");
+            for (var i = 1; i < changed.Count - 1; i++)
+            {
+                result.Append($", {changed[i]}");
+            }
+
+            result.Append($" and {changed[^1]}.");
+        }
+
+        return result.ToString();
+    }
 
 }
