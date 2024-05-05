@@ -4,16 +4,10 @@
 @using Niwa.Helpers
 @using Niwa.Models.Enums
 @using Niwa.Services
-@using Niwa.Services.CollectionServices
-@using Niwa.Services.Converters
-@using Niwa.Services.GardenServices
 @using Niwa.Services.NoteServices
 @inject NavigationManager NavigationManager
 @inject ILinkManager LinkManager
 @inject INoteQueryService NoteQueryService
-@inject INoteToNotePageConverter NoteToNotePageConverter
-@inject ICollectionQueryService CollectionQueryService
-@inject IGardenQueryService GardenQueryService
 
 @if (IsSuccessfullyInitialized)
 {
@@ -30,7 +24,7 @@
             <span>Viewing snapshot from @Model.LatestRevision.CreatedDateTime</span>
         </ActionsLeft>
         <ActionsRight>
-            <ActionLink To="@LinkManager.LinkToHistory(_note)">Back</ActionLink>
+            <ActionLink To="@LinkManager.LinkToHistory(_note!)">Back</ActionLink>
         </ActionsRight>
     </ActionsContainer>
 
