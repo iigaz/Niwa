@@ -148,12 +148,12 @@
             try
             {
                 var graph = await OpenGraph.ParseUrlAsync(Model.Url);
-                var title = graph.Title;
+                var title = graph.Title.Length == 0 ? Model.Url : graph.Title;
                 var link = graph.Url?.ToString() ?? Model.Url;
                 var image = graph.Image?.ToString();
-                var imageAlt = graph.Metadata["og:image:alt"].Value();
+                var imageAlt = graph.Metadata["og:image"].FirstOrDefault()?.Properties["alt"].Value();
                 var description = graph.Metadata["og:description"].Value();
-                var tags = string.Join(' ', graph.Metadata["og:article:tag"]);
+                var tags = string.Join(' ', graph.Metadata["og:article"].FirstOrDefault()?.Properties["tag"] ?? []);
                 Model.Title = title;
                 Model.Summary = $"{description}";
                 Model.Content = $"[{title}]({link})" + (image != null ? $"\n\n![{imageAlt}]({image})" : "");
