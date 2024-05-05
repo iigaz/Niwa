@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Niwa.Models.Enums;
 using Niwa.Models.Meta;
-using Sqids;
 
 namespace Niwa.Models;
 
@@ -76,11 +75,4 @@ public class Note
     public ICollection<User> Subscribers { get; set; } = new List<User>();
 
     public DateTime CreatedDateTime { get; set; }
-
-    public void GenerateShortId(string alphabet)
-    {
-        ShortId = new SqidsEncoder<long>(new SqidsOptions { Alphabet = alphabet }).Encode(
-            ((DateTimeOffset)CreatedDateTime).ToUnixTimeSeconds());
-        // TODO: move into a service
-    }
 }

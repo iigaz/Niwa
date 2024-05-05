@@ -16,7 +16,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Mapster" Version="7.4.0"/>
+        <PackageReference Include="FossilDelta" Version="0.1.0"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.1"/>
+        <PackageReference Include="Sqids" Version="3.1.0"/>
     </ItemGroup>
 
 </Project>

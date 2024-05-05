@@ -1,3 +1,5 @@
+@using Niwa.Services
+@inject ILinkManager LinkManager
 <header>
     <div class="left">
         <h4>
@@ -14,7 +16,7 @@
         <AuthorizeView>
             <Authorized>
                 <h5>
-                    <a href="#">@context.User.Identity?.Name</a>
+                    <a href="@LinkManager.LinkToGarden(context.User.Identity!.Name!)">@context.User.Identity.Name</a>
                 </h5>
             </Authorized>
             <NotAuthorized>

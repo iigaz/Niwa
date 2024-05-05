@@ -1,6 +1,10 @@
 @page "/feed"
-@using Niwa.Components.General
-<h1>Welcome back, @Garden!</h1>
+@using Niwa.Dtos.GardenDtos
+@using Niwa.Services.GardenServices
+@using Niwa.Components.Cards
+@inject IGardenQueryService GardenQueryService
+@inject IConfiguration Configuration
+<h1>Welcome back, JLKSJDFKLSJFD!</h1>
 
 <ActionsContainer>
     <ActionsLeft>
@@ -41,6 +45,27 @@
     </li>
 </ul>
 
+<hr/>
+
+<h3>Featured Gardens</h3>
+
+<div class="cards">
+    @foreach (var garden in FeaturedGardens)
+    {
+        <GardenCard Model="garden"/>
+    }
+</div>
+
 @code {
-    private static string Garden => "Admin1337";
+    // private static string Garden => "Admin1337";
+
+    private List<GardenCardQueryDto> FeaturedGardens { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var ids = Configuration.GetSection("Niwa:FeaturedGardens").Get<List<string>>()?.Select(Guid.Parse) ?? [];
+        var gardens = await GardenQueryService.GetGardensWithStatsByIdsAsync(ids.ToList());
+        FeaturedGardens = gardens.Select(GardenCardQueryDto.From).ToList();
+    }
+
 }

@@ -1,0 +1,101 @@
+@using Niwa.Extensions
+@using Niwa.Models.Enums
+@using Niwa.Services.NoteServices
+@using Niwa.Services.NoteServices.Models
+@using Niwa.Dtos.NoteDtos
+@using Niwa.Dtos.FileDtos
+@inject INoteCommandService NoteCommandService
+<EditForm Model="Model" Enhance OnValidSubmit="OnValidSubmit" FormName="EditNote">
+    <DataAnnotationsValidator/>
+    <div>
+        <table>
+            <colgroup>
+                <col/>
+                <col style="width: 100%"/>
+            </colgroup>
+            <tr>
+                <th>
+                    <label>Title</label>
+                </th>
+                <td>
+                    <InputText @bind-Value="Model!.Title"/>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <label>Summary</label>
+                </th>
+                <td>
+                    <InputTextArea @bind-Value="Model!.Summary" rows="5"></InputTextArea>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <label>Tags</label>
+                </th>
+                <td>
+                    <InputText class="tag tag-input" @bind-Value="Model!.Tags"></InputText>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <label>Access</label>
+                </th>
+                <td>
+                    <InputSelect @bind-Value="Model!.Access">
+                        @foreach (var accessType in Enum.GetValues<Access>())
+                        {
+                            <option value="@accessType">@accessType.GetName()</option>
+                        }
+                    </InputSelect>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div>
+        <div class="content-header">
+            <span class="information">Supports markdown.</span><button type="button">Upload image</button>
+        </div>
+        <InputTextArea rows="10" @bind-Value="Model!.Content"></InputTextArea>
+    </div>
+    <div>
+        <h5>Attachments</h5><InputFile multiple></InputFile>
+        <ul>
+            @foreach (var attachment in Model!.Files ?? new List<NoteFileQueryDto>())
+            {
+                <li>
+                    <a href="@attachment.FileUrl">@attachment.Filename</a>&emsp;<a href="#" class="btn-link">Remove</a>
+                </li>
+            }
+        </ul>
+    </div>
+    <ValidationSummary/>
+    <div class="footer">
+        <button type="submit">Submit</button>
+    </div>
+</EditForm>
+
+@code {
+
+    [Parameter]
+    public EditNoteCommandDto? Model { get; set; }
+
+    [Parameter]
+    public Guid? NoteId { get; set; }
+
+    private async Task OnValidSubmit()
+    {
+        if (NoteId != null && Model != null)
+        {
+            await NoteCommandService.UpdateAsync(new UpdateNoteCommand
+            {
+                Id = NoteId.Value,
+                Title = Model.Title,
+                Summary = Model.Summary,
+                Content = Model.Content,
+                Access = Model!.Access
+            });
+        }
+    }
+
+}

@@ -4,6 +4,7 @@
 @using Niwa.Models.Meta
 @inject IRegistrationCommandService RegistrationCommandService
 @inject NavigationManager NavigationManager
+@inject IConfiguration Configuration
 
 <TwoPanelBanner>
     <BannerLeft>
@@ -11,38 +12,45 @@
     </BannerLeft>
     <BannerRight>
         <h1>Register</h1>
-        <EditForm EditContext="EditContext" Enhance FormName="RegisterForm" OnValidSubmit="Submit">
-            <div class="form">
-                <DataAnnotationsValidator/>
-                <div>
-                    <label>
-                        Username
-                        <InputText @bind-Value="Model!.Username"/>
-                    </label>
+        @if (RegistrationOpen)
+        {
+            <EditForm EditContext="EditContext" Enhance FormName="RegisterForm" OnValidSubmit="Submit">
+                <div class="form">
+                    <DataAnnotationsValidator/>
+                    <div>
+                        <label>
+                            Username
+                            <InputText @bind-Value="Model!.Username"/>
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            Password
+                            <InputText type="password" @bind-Value="Model!.Password"></InputText>
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            Repeat Password
+                            <InputText type="password" @bind-Value="Model!.RepeatPassword"></InputText>
+                        </label>
+                    </div>
+                    <ValidationSummary/>
+                    <ActionsContainer>
+                        <ActionsLeft>
+                            <a href="/login" class="btn-link">I already have an account</a>
+                        </ActionsLeft>
+                        <ActionsRight>
+                            <button>Register</button>
+                        </ActionsRight>
+                    </ActionsContainer>
                 </div>
-                <div>
-                    <label>
-                        Password
-                        <InputText type="password" @bind-Value="Model!.Password"></InputText>
-                    </label>
-                </div>
-                <div>
-                    <label>
-                        Repeat Password
-                        <InputText type="password" @bind-Value="Model!.RepeatPassword"></InputText>
-                    </label>
-                </div>
-                <ValidationSummary/>
-                <ActionsContainer>
-                    <ActionsLeft>
-                        <a href="/login" class="btn-link">I already have an account</a>
-                    </ActionsLeft>
-                    <ActionsRight>
-                        <button>Register</button>
-                    </ActionsRight>
-                </ActionsContainer>
-            </div>
-        </EditForm>
+            </EditForm>
+        }
+        else
+        {
+            <p>Registration closed. Come back another time.</p>
+        }
     </BannerRight>
 </TwoPanelBanner>
 
@@ -55,12 +63,15 @@
 
     private ValidationMessageStore? MessageStore { get; set; }
 
+    private bool RegistrationOpen { get; set; }
+
     protected override void OnInitialized()
     {
         Model ??= new RegisterDto();
         EditContext ??= new EditContext(Model);
         MessageStore ??= new ValidationMessageStore(EditContext);
         EditContext.OnValidationRequested += EditContextOnOnValidationRequested;
+        RegistrationOpen = Configuration.GetSection("Niwa:RegistrationOpen").Get<bool>();
     }
 
     private void EditContextOnOnValidationRequested(object? sender, ValidationRequestedEventArgs e)

@@ -1,8 +1,10 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Niwa.Models.Enums;
 
 public enum Access
 {
-    Private,
-    Public,
-    LinkOnly
+    [Display(Name = "Private")] Private,
+    [Display(Name = "Public")] Public,
+    [Display(Name = "Link-Only")] LinkOnly
 }

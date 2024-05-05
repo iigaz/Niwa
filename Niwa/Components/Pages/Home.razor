@@ -68,7 +68,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var ids = Configuration.GetSection("FeaturedGardens").Get<List<string>>()?.Select(Guid.Parse) ?? [];
+        var ids = Configuration.GetSection("Niwa:FeaturedGardens").Get<List<string>>()?.Select(Guid.Parse) ?? [];
         var gardens = await GardenQueryService.GetGardensWithStatsByIdsAsync(ids.ToList());
         FeaturedGardens = gardens.Select(GardenCardQueryDto.From).ToList();
     }

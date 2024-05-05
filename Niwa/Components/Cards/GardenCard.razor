@@ -4,7 +4,7 @@
         <RegularLink To="@Url">@Model.Title</RegularLink>
     </h5>
     <div class="description">
-        @Model.Description
+        <Markdown Content="@Model.Description?.ReplaceLineEndings(" ")"/>
     </div>
     <div class="footer">
         <span>Active since: @Model.ActiveSinceYear</span>
