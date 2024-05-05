@@ -1,17 +1,55 @@
 @page "/link"
+@using OpenGraphNet.Metadata
 @using Niwa.Components.Cards
-<h5>External link</h5>
+@using OpenGraphNet
+@using System.Globalization
 
-<ExternalLinkPreviewCard
-    LinkUrl="https://spiritualipsum.com/"
-    LinkTitle="Shower me with Divine Love"
-    LinkImage="peter-griffith.jpg"
-    AccessDate="Wed Mar 27 2024 20:26:28"
-    LinkDescription="The purpose of this site is to give you some text you can use as filler on your site.  When building a website, you need to have text that you put into your site as you are building.  And you might not yet be ready to add your actual text in.
-With this site, you can generate Spiritual text that matches your vibe. You can select a different number of paragraphs to generate spiritual text to add to your site.  And you can use this on any number of your sites you wish for free!  All generated text is copyright free to use however you want.
-This is so much more interesting than boring Latin text that does not reflect who you are as a person."
-    ReadHereLink="#"/>
+@if (IsSuccessfullyInitialized)
+{
+    <PageTitle>External link - @Model!.LinkTitle</PageTitle>
+    <HeaderTitle>External link</HeaderTitle>
+    <h5>External link</h5>
+
+    <ExternalLinkPreviewCard Model="Model"/>
+}
+else
+{
+    <Error/>
+}
 
 @code {
+
+    [SupplyParameterFromQuery]
+    public string? Url { get; set; }
+
+    public ExternalLinkPreviewCard.ExternalLinkTemp? Model { get; set; }
+
+    private bool IsSuccessfullyInitialized { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Url == null || !Uri.IsWellFormedUriString(Url, UriKind.Absolute))
+            return;
+        Model ??= new ExternalLinkPreviewCard.ExternalLinkTemp();
+        try
+        {
+            var graph = await OpenGraph.ParseUrlAsync(Url, timeout: 1000);
+            Model.LinkTitle = graph.Title.Length == 0 ? Url : graph.Title;
+            Model.LinkUrl = graph.Url?.ToString() ?? Url;
+            Model.LinkImage = graph.Image?.ToString();
+            Model.LinkDescription = graph.Metadata["og:description"].Value();
+            Model.AccessDate = DateTime.UtcNow.ToString(CultureInfo.InvariantCulture);
+        }
+        catch
+        {
+            Model.LinkUrl = Url;
+            Model.LinkTitle = Url;
+            Model.AccessDate = DateTime.UtcNow.ToString(CultureInfo.InvariantCulture);
+            Model.LinkDescription = "";
+            Model.LinkImage = "";
+        }
+
+        IsSuccessfullyInitialized = true;
+    }
 
 }

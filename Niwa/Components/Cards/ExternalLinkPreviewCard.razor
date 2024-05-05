@@ -1,16 +1,16 @@
-<ImageCard CardImage="@LinkImage"
-           CardImageAltText="@LinkTitle">
+<ImageCard CardImage="@Model.LinkImage"
+           CardImageAltText="@Model.LinkTitle">
     <CardTitle>
-        <a target="_blank" href="@LinkUrl">@LinkTitle</a>
+        <a target="_blank" href="@Model.LinkUrl">@Model.LinkTitle</a>
     </CardTitle>
     <CardDescription>
-        <a target="_blank" href="@LinkUrl" class="url">@LinkUrl</a>
-        <p class="description-info">@LinkDescription</p>
-        <p class="information access-date">Access date: @AccessDate</p>
+        <a target="_blank" href="@Model.LinkUrl" class="url">@Model.LinkUrl</a>
+        <p class="description-info">@Model.LinkDescription</p>
+        <p class="information access-date">Access date: @Model.AccessDate</p>
     </CardDescription>
     <CardFooter>
-        <a href="@ReadHereLink" class="btn-link">Read here</a>
-        <a target="_blank" href="https://web.archive.org/web/*/@LinkUrl" class="btn-link">View on Wayback Machine</a>
+        <a target="_blank" href="@Model.LinkUrl" class="btn-link">Visit link</a>
+        <a target="_blank" href="https://web.archive.org/web/*/@Model.LinkUrl" class="btn-link">View on Wayback Machine</a>
     </CardFooter>
 </ImageCard>
 
@@ -19,26 +19,17 @@
     private string? _description;
 
     [Parameter]
-    public string? LinkTitle { get; set; }
-
-    [Parameter]
-    public string? LinkImage { get; set; }
-
-    [Parameter]
     [EditorRequired]
-    public string? LinkUrl { get; set; }
+    public ExternalLinkTemp Model { get; set; } = null!;
 
-    [Parameter]
-    public string? LinkDescription
+    public class ExternalLinkTemp
     {
-        get => _description;
-        set => _description = value?.ReplaceLineEndings("  ");
+        public string? LinkTitle { get; set; }
+        public string? LinkImage { get; set; }
+        public string? LinkUrl { get; set; }
+        public string? LinkDescription { get; set; }
+        public string? AccessDate { get; set; }
     }
 
-    [Parameter]
-    public string? AccessDate { get; set; }
-
-    [Parameter]
-    public string? ReadHereLink { get; set; }
 
 }

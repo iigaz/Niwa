@@ -1,9 +1,20 @@
-@(new MarkupString(Markdig.Markdown.ToHtml(Content!)))
+@using Markdig
+@using Niwa.Extensions
+@(new MarkupString(Markdig.Markdown.ToHtml(Content!, Pipeline)))
 
 @code {
 
     [Parameter]
     [EditorRequired]
     public string? Content { get; set; }
+
+    private MarkdownPipeline Pipeline { get; set; } = null!;
+
+    protected override void OnInitialized()
+    {
+        Pipeline = new MarkdownPipelineBuilder()
+            .Use<LinkExtension>()
+            .Build();
+    }
 
 }
