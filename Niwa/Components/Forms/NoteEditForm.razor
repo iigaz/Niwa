@@ -6,7 +6,7 @@
 @using Niwa.Dtos.FileDtos
 @inject INoteCommandService NoteCommandService
 @inject NavigationManager NavigationManager
-<EditForm Model="Model" Enhance OnValidSubmit="OnValidSubmit" FormName="EditNote">
+<EditForm EditContext="EditContext" Enhance OnValidSubmit="OnValidSubmit" FormName="EditNote">
     <DataAnnotationsValidator/>
     <div>
         <table>
@@ -87,11 +87,22 @@
     [Parameter]
     public string? RedirectTo { get; set; }
 
+    private EditContext? EditContext { get; set; }
+
+    private ValidationMessageStore? MessageStore { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Model ??= new EditNoteCommandDto();
+        EditContext ??= new EditContext(Model);
+        MessageStore ??= new ValidationMessageStore(EditContext);
+    }
+
     private async Task OnValidSubmit()
     {
         if (NoteId != null && Model != null)
         {
-            await NoteCommandService.UpdateAsync(new UpdateNoteCommand
+            var success = await NoteCommandService.UpdateAsync(new UpdateNoteCommand
             {
                 Id = NoteId.Value,
                 Title = Model.Title,
@@ -100,8 +111,13 @@
                 Access = Model.Access,
                 Tags = Model.Tags
             });
-            if (RedirectTo != null)
+            if (success && RedirectTo != null)
                 NavigationManager.NavigateTo(RedirectTo);
+            if (!success)
+            {
+                MessageStore?.Add(() => Model.Tags, "Something went wrong. Please ensure your tags are within 32 characters and contain only small latin letters and symbols '-', '_' or '+'.");
+                EditContext?.NotifyValidationStateChanged();
+            }
         }
     }
 
