@@ -1,0 +1,3 @@
+include:
+  - OpenSearch/docker-compose.yml
+  - MinIO/docker-compose.yml

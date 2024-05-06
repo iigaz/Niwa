@@ -7,6 +7,8 @@ using Niwa.Search.Services;
 using Niwa.Services;
 using Niwa.Services.CollectionRepositories;
 using Niwa.Services.CollectionServices;
+using Niwa.Services.CommentRepositories;
+using Niwa.Services.CommentServices;
 using Niwa.Services.Converters;
 using Niwa.Services.GardenRepositories;
 using Niwa.Services.GardenServices;
@@ -63,7 +65,10 @@ builder.Services.AddScoped<ICollectionQueryService, CollectionQueryService>();
 builder.Services.AddScoped<ICollectionCommandService, CollectionCommandService>();
 builder.Services.AddScoped<INoteSearchCommandService, NoteSearchCommandService>();
 builder.Services.AddScoped<INoteSearchQueryService, NoteSearchQueryService>();
-
+builder.Services.AddScoped<ICommentQueryRepository, CommentQueryRepository>();
+builder.Services.AddScoped<ICommentCommandRepository, CommentCommandRepository>();
+builder.Services.AddScoped<ICommentQueryService, CommentQueryService>();
+builder.Services.AddScoped<ICommentCommandService, CommentCommandService>();
 
 var app = builder.Build();
 

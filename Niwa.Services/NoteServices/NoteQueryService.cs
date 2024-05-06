@@ -25,7 +25,7 @@ public class NoteQueryService(INoteQueryRepository noteQueryRepository, IUserQue
         return noteQueryRepository.GetNotes()
             .Include(n => n.Comments)
             .Where(n => n.Id == note.Id)
-            .Select(n => n.Comments.Count).SingleOrDefaultAsync();
+            .Select(n => n.Comments.Count(comment => !comment.Deleted)).SingleOrDefaultAsync();
     }
 
     public async Task<bool> IsUserSubscribedAsync(Guid userId, Note note)

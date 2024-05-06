@@ -1,38 +1,222 @@
-@page "/garden/123456/shower-me-with-divine-love/comments"
-@using Niwa.Components.Cards
-<div class="headers">
-    <h3>Shower me with Divine Love</h3>
-    <h5>comments</h5>
-</div>
-<div>
-    <form>
-        <input placeholder="Write your thoughts" type="text"/>
-        <button>Post</button>
-    </form>
-</div>
+@page "/garden/{AuthorUsername}/{NoteShortId}/{NoteSlug?}/comments"
+@using System.Security.Claims
+@using System.Web
+@using Niwa.Extensions
+@using Niwa.Helpers
+@using Niwa.Models
+@using Niwa.Models.Enums
+@using Niwa.Models.Meta
+@using Niwa.Services
+@using Niwa.Services.CommentServices
+@using Niwa.Services.NoteServices
+@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+@inject NavigationManager NavigationManager
+@inject ILinkManager LinkManager
+@inject INoteQueryService NoteQueryService
+@inject ICommentQueryService CommentQueryService
+@inject ICommentCommandService CommentCommandService
 
-<div class="cards">
-    <CommentCard>
-        <Author>
-            <a href="#">Admin1337</a>
-        </Author>
-        <PostDateTime>2024-04-04 12:02</PostDateTime>
-        <Content>
-            <p>what the f##k did you just f#####g say about me, you little b###h? i&#39;ll have you know I graduated top of my class in the Navy Seals, and i&#39;ve been involved in numerous secret raids on Al-Quaeda, and I have over 300 confirmed kills. i am trained in gorilla warfare and I&#39;m the top sniper in the entire US armed forces. you are nothing to me but just another target. I will wipe you the f##k out with precision the likes of which has never been seen before on this Earth, mark my f#####g words. you think you can get away with saying that s##t to me over the Internet? think again, f####r. as we speak I am contacting my secret network of spies across the USA and your IP is being traced right now so you better prepare for the storm, maggot. the storm that wipes out the pathetic little thing you call your life. you&#39;re f#####g dead, kid. I can be anywhere, anytime, and I can kill you in over seven hundred ways, and that&#39;s just with my bare hands. not only am I extensively trained in unarmed combat, but I have access to the entire arsenal of the United States Marine Corps and i will use it to its full extent to wipe your miserable a#s off the face of the continent, you little s##t. if only you could have known what unholy retribution your little &quot;clever&quot; comment was about to bring down upon you, maybe you would have held your f#####g tongue. but you couldn&#39;t, you didn&#39;t, and now you&#39;re paying the price, you goddamn idiot. i will s##t fury all over you and you will drown in it. you&#39;re f#####g dead, kiddo.</p>
-        </Content>
-        <DeleteButton>
-            <a href="#" class="btn-link">Delete</a>
-        </DeleteButton>
-    </CommentCard>
-    <CommentCard>
-        <Author>Admin1337</Author>
-        <PostDateTime>2024-04-04 12:02</PostDateTime>
-        <Content>
-            <p>@@Admin1337, What in Davy Jones’ locker did ye just bark at me, ye scurvy bilgerat? I’ll have ye know I be the meanest cutthroat on the seven seas, and I’ve led numerous raids on fishing villages, and raped over 300 wenches. I be trained in hit-and-run pillaging and be the deadliest with a pistol of all the captains on the high seas. Ye be nothing to me but another source o’ swag. I’ll have yer guts for garters and keel haul ye like never been done before, hear me true. You think ye can hide behind your newfangled computing device? Think twice on that, scallywag. As we parley I be contacting my secret network o’ pirates across the sea and yer port is being tracked right now so ye better prepare for the typhoon, weevil. The kind o’ monsoon that’ll wipe ye off the map. You’re sharkbait, fool. I can sail anywhere, in any waters, and can kill ye in o’er seven hundred ways, and that be just with me hook and fist. Not only do I be top o’ the line with a cutlass, but I have an entire pirate fleet at my beck and call and I’ll damned sure use it all to wipe yer arse off o’ the world, ye dog. If only ye had had the foresight to know what devilish wrath your jibe was about to incur, ye might have belayed the comment. But ye couldn’t, ye didn’t, and now ye’ll pay the ultimate toll, you buffoon. I’ll shit fury all over ye and ye’ll drown in the depths o’ it. You’re fish food now.</p>
-        </Content>
-    </CommentCard>
-</div>
+
+@if (IsSuccessfullyInitialized)
+{
+    <PageTitle>Comments - @_note!.Title</PageTitle>
+    <HeaderTitle>
+        <RegularLink To="@LinkManager.LinkToNote(_note!)">@_note!.Title</RegularLink>
+    </HeaderTitle>
+    <h5>Comments</h5>
+    <AuthorizeView Context="authContext">
+        <Authorized>
+            <div>
+                @if (_replyToGuid != Guid.Empty)
+                {
+                    <p>Replying to <RegularLink To="@("#" + ReplyTo)" RelativeTo="@NavigationManager.Uri">@ReplyToAuthor</RegularLink>:</p>
+                }
+                <EditForm EditContext="EditContext" Enhance FormName="LeaveComment" OnValidSubmit="OnValidSubmit">
+                    <DataAnnotationsValidator/>
+                    <div class="form">
+                        <InputTextArea placeholder="Write your thoughts" @bind-Value="Model!.Content"></InputTextArea>
+                        <ValidationSummary/>
+                        <button>Post</button>
+                    </div>
+                </EditForm>
+            </div>
+        </Authorized>
+    </AuthorizeView>
+
+    @if (CommentsList.Count > 0)
+    {
+        <div class="cards">
+            @foreach (var comment in CommentsList)
+            {
+                <div class="card" id="@comment.Id">
+                    <div class="header">
+                        @if (comment.ParentId == null)
+                        {
+                            <span>
+                                <RegularLink To="@LinkManager.LinkToGarden(comment.User.Username)">
+                                    @comment.User.Username
+                                </RegularLink> writes:
+                            </span>
+                        }
+                        else
+                        {
+                            <span>
+                                <RegularLink To="@LinkManager.LinkToGarden(comment.User.Username)">
+                                    @comment.User.Username
+                                </RegularLink>
+                                replies to
+                                @if (comment.Parent!.Deleted)
+                                {
+                                    @("[deleted comment]")
+                                }
+                                else
+                                {
+                                    <RegularLink To="@("#" + comment.ParentId)" RelativeTo="@(new Uri(NavigationManager.Uri).AbsolutePath)">
+                                        @comment.Parent!.User.Username
+                                    </RegularLink>
+                                }
+                                :
+                            </span>
+                        }
+                        <span class="right">
+                            <span title="@comment.CreatedDateTime.ToString(CultureInfo.InvariantCulture)">@comment.CreatedDateTime.TimeAgo()</span>
+
+                            <AuthorizeView>
+                                <Authorized>
+                                    @if (_currentUserId == comment.UserId)
+                                    {
+                                        <form method="post" data-enhance @formname="@("delete" + comment.Id)" @onsubmit="() => DeleteComment(comment.Id)">
+                                            <AntiforgeryToken/>
+                                            <button class="btn-link">Delete</button>
+                                        </form>
+                                    }
+                                    <ActionLink To="@("?replyTo=" + HttpUtility.UrlEncode(comment.Id.ToString()) + "&replyToAuthor=" + HttpUtility.UrlEncode(comment.User.Username))" RelativeTo="@(new Uri(NavigationManager.Uri).AbsolutePath)">
+                                        Reply
+                                    </ActionLink>
+                                </Authorized>
+                            </AuthorizeView>
+                        </span>
+                    </div>
+                    <div class="content">
+                        <Markdown Content="@comment.Content"/>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p>Be the first to leave a comment.</p>
+    }
+}
+else
+{
+    <Error/>
+}
 
 @code {
+
+    private Models.Note? _note;
+
+    [SupplyParameterFromForm]
+    public CommentCommandTemp? Model { get; set; }
+
+    public List<Comment> CommentsList { get; set; } = [];
+
+    private EditContext? EditContext { get; set; }
+
+    private ValidationMessageStore? MessageStore { get; set; }
+
+    [Parameter]
+    public string AuthorUsername { get; set; } = null!;
+
+    [Parameter]
+    public string NoteShortId { get; set; } = null!;
+
+    [Parameter]
+    public string? NoteSlug { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string ReplyTo { get; set; } = "";
+
+    [SupplyParameterFromQuery]
+    public string ReplyToAuthor { get; set; } = "";
+
+    private Guid _replyToGuid;
+
+    [CascadingParameter]
+    public HttpContext HttpContext { get; set; } = null!;
+
+    private Guid _currentUserId;
+
+    private bool IsSuccessfullyInitialized { get; set; }
+
+    private bool IsCurrentUserAuthor { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _note = await NoteQueryService.GetNoteByUsernameAndShortIdAsync(AuthorUsername, NoteShortId);
+        Guid.TryParse(ReplyTo, out _replyToGuid);
+
+        if (_note == null)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        var currentUserId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var parsed = Guid.TryParse(currentUserId, out _currentUserId);
+        IsCurrentUserAuthor = parsed && _note.UserId == _currentUserId;
+
+        if (_note.Access == Access.Private && !IsCurrentUserAuthor)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        var slug = SlugGenerator.FromTitle(_note.Title);
+        if (NoteSlug != slug)
+        {
+            NavigationManager.NavigateTo(LinkManager.LinkToNote(_note));
+            return;
+        }
+
+        CommentsList = await CommentQueryService.GetNoteCommentsAsync(_note.Id);
+
+        Model ??= new CommentCommandTemp();
+        EditContext ??= new EditContext(Model);
+        MessageStore ??= new ValidationMessageStore(EditContext);
+        IsSuccessfullyInitialized = true;
+    }
+
+    public class CommentCommandTemp
+    {
+        [Length(Lengths.CommentContentMin, Lengths.CommentContentMax)]
+        public string Content { get; set; } = "";
+    }
+
+    private async Task OnValidSubmit()
+    {
+        var success = await CommentCommandService.CreateComment(_currentUserId, _note!.Id, _replyToGuid == Guid.Empty ? null : _replyToGuid, Model!.Content);
+        if (success)
+        {
+            NavigationManager.NavigateTo(new Uri(NavigationManager.Uri).AbsolutePath);
+        }
+        else
+        {
+            MessageStore?.Add(() => Model.Content, "Something went wrong.");
+            EditContext?.NotifyValidationStateChanged();
+        }
+    }
+
+    private async Task DeleteComment(Guid commentId)
+    {
+        var success = await CommentCommandService.DeleteComment(_currentUserId, commentId);
+        if (success)
+        {
+            NavigationManager.NavigateTo(new Uri(NavigationManager.Uri).AbsolutePath);
+        }
+    }
 
 }
