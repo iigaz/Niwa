@@ -1,13 +1,13 @@
 @using Niwa.Dtos.NoteDtos
 @using Niwa.Components.Cards
+<div>
+    <form data-enhance @formname="search">
+        <input name="q" placeholder="Search query" type="search" value="@Query"/>
+        <button>Search</button>
+    </form>
+</div>
 @if (Notes.Count > 0)
 {
-    <div>
-        <form data-enhance @formname="search">
-            <input name="q" placeholder="Search query" type="search" value="@Query" required/>
-            <button>Search</button>
-        </form>
-    </div>
     <div class="cards">
         @foreach (var note in Notes)
         {

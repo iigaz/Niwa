@@ -1,10 +1,15 @@
 @page "/garden/{authorUsername}/search"
 @using System.Security.Claims
-@using Niwa.Services.GardenServices
+@using Niwa.Dtos.NoteDtos
+@using Niwa.Search.Services
+@using Niwa.Services
 @using Niwa.Services.Converters
+@using Niwa.Services.GardenServices
 @using Niwa.Components.Forms
 @inject IGardenQueryService GardenQueryService
 @inject INoteToNoteCardConverter NoteToNoteCardConverter
+@inject INoteSearchQueryService NoteSearchQueryService
+@inject ILinkManager LinkManager
 
 @if (IsSuccessfullyInitialized)
 {
@@ -13,7 +18,7 @@
 
     <h3>@Model!.Title</h3>
 
-    <NoteSearchForm Notes="Model!.Notes.Select(NoteToNoteCardConverter.Convert).ToList().ToList()" Query="@Query"></NoteSearchForm>
+    <NoteSearchForm Notes="Notes" Query="@Query"></NoteSearchForm>
 }
 else
 {
@@ -23,6 +28,8 @@ else
 @code {
 
     private Models.Garden? Model { get; set; }
+
+    private List<NoteCardQueryDto> Notes { get; set; } = [];
 
     [SupplyParameterFromQuery(Name = "q")]
     public string? Query { get; set; }
@@ -39,6 +46,30 @@ else
     {
         Guid.TryParse(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId);
         Model ??= await GardenQueryService.GetGardenWithNotes(userId, AuthorUsername);
+        if (Model == null)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(Query))
+        {
+            Notes = (await NoteSearchQueryService.SearchGardenNotesAsync(Query, AuthorUsername, userId)).Select(note => new NoteCardQueryDto
+            {
+                Url = LinkManager.LinkToNote(note.Author, note.ShortId, note.Title),
+                Title = note.Title,
+                Image = note.Image,
+                Garden = note.GardenTitle,
+                Summary = note.Summary,
+                Access = note.Access,
+                Tags = note.Tags.ToList()
+            }).ToList();
+        }
+        else
+        {
+            Notes = Model?.Notes.Select(NoteToNoteCardConverter.Convert).ToList() ?? [];
+        }
+
         IsSuccessfullyInitialized = true;
     }
 

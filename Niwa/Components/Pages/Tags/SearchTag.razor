@@ -1,11 +1,15 @@
 @page "/tag/{Tag}"
 @using System.Security.Claims
-@using Niwa.Models
+@using Niwa.Dtos.NoteDtos
+@using Niwa.Search.Services
+@using Niwa.Services
 @using Niwa.Services.Converters
 @using Niwa.Services.NoteServices
 @using Niwa.Components.Forms
 @inject INoteQueryService NoteQueryService
 @inject INoteToNoteCardConverter NoteToNoteCardConverter
+@inject INoteSearchQueryService NoteSearchQueryService
+@inject ILinkManager LinkManager
 
 @if (IsSuccessfullyInitialized)
 {
@@ -14,7 +18,7 @@
 
     <h3>Tag: @Tag</h3>
 
-    <NoteSearchForm Notes="Notes.Select(NoteToNoteCardConverter.Convert).ToList()" Query="@Query"></NoteSearchForm>
+    <NoteSearchForm Notes="Notes" Query="@Query"></NoteSearchForm>
 }
 else
 {
@@ -23,7 +27,7 @@ else
 
 @code {
 
-    private List<Note> Notes { get; set; } = [];
+    private List<NoteCardQueryDto> Notes { get; set; } = [];
 
     [Parameter]
     public string Tag { get; set; } = null!;
@@ -39,7 +43,24 @@ else
     protected override async Task OnInitializedAsync()
     {
         Guid.TryParse(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier), out var currentUser);
-        Notes = await NoteQueryService.GetNotesByTagAsync(currentUser, Tag);
+        if (!string.IsNullOrEmpty(Query))
+        {
+            Notes = (await NoteSearchQueryService.SearchTagNotesAsync(Query, Tag, currentUser)).Select(note => new NoteCardQueryDto
+            {
+                Url = LinkManager.LinkToNote(note.Author, note.ShortId, note.Title),
+                Title = note.Title,
+                Image = note.Image,
+                Garden = note.GardenTitle,
+                Summary = note.Summary,
+                Access = note.Access,
+                Tags = note.Tags.ToList()
+            }).ToList();
+        }
+        else
+        {
+            Notes = (await NoteQueryService.GetNotesByTagAsync(currentUser, Tag)).Select(NoteToNoteCardConverter.Convert).ToList();
+        }
+
         IsSuccessfullyInitialized = true;
     }
 

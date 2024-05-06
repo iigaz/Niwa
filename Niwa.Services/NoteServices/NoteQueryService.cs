@@ -53,6 +53,7 @@ public class NoteQueryService(INoteQueryRepository noteQueryRepository, IUserQue
     public Task<List<Note>> GetNotesAsync(Guid currentUser)
     {
         return noteQueryRepository.GetNotes().Include(note => note.Tags).Include(note => note.Garden)
-            .Include(note => note.User).ToListAsync();
+            .Include(note => note.User)
+            .Where(note => note.Access == Access.Public || note.UserId == currentUser).ToListAsync();
     }
 }

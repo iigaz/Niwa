@@ -1,10 +1,16 @@
 @page "/collection/{CollectionId}"
+@using System.Security.Claims
 @using Niwa.Models
+@using Niwa.Search.Services
+@using Niwa.Services
 @using Niwa.Services.CollectionServices
 @using Niwa.Services.Converters
+@using Niwa.Dtos.NoteDtos
 @using Niwa.Components.Forms
 @inject ICollectionQueryService CollectionQueryService
 @inject INoteToNoteCardConverter NoteToNoteCardConverter
+@inject INoteSearchQueryService NoteSearchQueryService
+@inject ILinkManager LinkManager
 
 @if (IsSuccessfullyInitialized)
 {
@@ -13,7 +19,7 @@
 
     <h3>Collection: @Model!.Title</h3>
 
-    <NoteSearchForm Notes="Model!.Notes.Select(NoteToNoteCardConverter.Convert).ToList()" Query="@Query"></NoteSearchForm>
+    <NoteSearchForm Notes="Notes" Query="@Query"></NoteSearchForm>
 }
 else
 {
@@ -27,6 +33,8 @@ else
 
     private Collection? Model { get; set; }
 
+    private List<NoteCardQueryDto> Notes { get; set; } = [];
+
     [SupplyParameterFromQuery(Name = "q")]
     public string? Query { get; set; }
 
@@ -37,7 +45,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var parsed = Guid.TryParse(CollectionId, out var collectionId);
+        var parsed = Guid.TryParse(CollectionId, out var collectionId) & Guid.TryParse(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier), out var currentUserId);
         if (!parsed)
         {
             HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
@@ -45,6 +53,31 @@ else
         }
 
         Model ??= await CollectionQueryService.GetById(collectionId);
+
+        if (Model == null || currentUserId != Model.UserId)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(Query))
+        {
+            Notes = (await NoteSearchQueryService.SearchCollectionNotesAsync(Query, Model.Notes.Select(note => note.Id))).Select(note => new NoteCardQueryDto
+            {
+                Url = LinkManager.LinkToNote(note.Author, note.ShortId, note.Title),
+                Title = note.Title,
+                Image = note.Image,
+                Garden = note.GardenTitle,
+                Summary = note.Summary,
+                Access = note.Access,
+                Tags = note.Tags.ToList()
+            }).ToList();
+        }
+        else
+        {
+            Notes = Model?.Notes.Select(NoteToNoteCardConverter.Convert).ToList() ?? [];
+        }
+
         IsSuccessfullyInitialized = true;
     }
 
