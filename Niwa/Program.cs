@@ -87,13 +87,13 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 // This endpoint is used to add all notes into index
-app.MapGet("/test-do-not-click",
-    async (INoteQueryRepository noteQueryRepository, INoteSearchCommandService noteSearchCommandService) =>
-    {
-        var notes = await noteQueryRepository.GetNotes().Include(note => note.Garden).Include(note => note.Tags)
-            .Include(note => note.User)
-            .Include(note => note.LatestRevision).ToListAsync();
-        foreach (var note in notes) await noteSearchCommandService.AddNoteToIndexAsync(note);
-    });
+// app.MapGet("/test-do-not-click",
+//     async (INoteQueryRepository noteQueryRepository, INoteSearchCommandService noteSearchCommandService) =>
+//     {
+//         var notes = await noteQueryRepository.GetNotes().Include(note => note.Garden).Include(note => note.Tags)
+//             .Include(note => note.User)
+//             .Include(note => note.LatestRevision).ToListAsync();
+//         foreach (var note in notes) await noteSearchCommandService.AddNoteToIndexAsync(note);
+//     });
 
 app.Run();
