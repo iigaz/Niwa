@@ -1,22 +1,143 @@
-@page "/garden/123456/shower-me-with-divine-love/collection"
-<h5>Change collection</h5>
+@page "/garden/{AuthorUsername}/{NoteShortId}/{NoteSlug?}/collection"
+@using System.Security.Claims
+@using Niwa.Dtos.CollectionDtos
+@using Niwa.Helpers
+@using Niwa.Models
+@using Niwa.Services
+@using Niwa.Services.CollectionServices
+@using Niwa.Services.NoteServices
+@inject INoteQueryService NoteQueryService
+@inject NavigationManager NavigationManager
+@inject ILinkManager LinkManager
+@inject ICollectionQueryService CollectionQueryService
+@inject ICollectionCommandService CollectionCommandService
 
-<form>
-    <div>
-        <b>Shower me with Divine Love</b>
-        <i>from</i>
-        <a href="#">Garden</a>
-        <i>should be in collection:</i>
-        <select>
-            <option>-- No collection --</option>
-            <option>Reading</option>
-        </select>
-    </div>
-    <div class="footer">
-        <button>Submit</button>
-    </div>
-</form>
+@if (IsSuccessfullyInitialized)
+{
+    <PageTitle>Change collection</PageTitle>
+    <HeaderTitle>Change collection</HeaderTitle>
+    <h5>Change collection</h5>
+
+    <EditForm Enhance FormName="ChangeCollection" EditContext="EditContext" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator/>
+        <div>
+            <b>
+                <RegularLink To="@LinkManager.LinkToNote(_note!)">@_note!.Title</RegularLink>
+            </b>
+            <i>from</i>
+            <RegularLink To="@LinkManager.LinkToGarden(AuthorUsername)">@_note!.Garden.Title</RegularLink>
+            <i>should be in collection:</i>
+            <InputSelect @bind-Value="Model!.CollectionId">
+                <option value="">-- No collection --</option>
+                @foreach (var collection in Collections)
+                {
+                    <option value="@collection.Id.ToString()">@collection.Title</option>
+                }
+            </InputSelect>
+        </div>
+        <p>
+            <i>or</i>
+        </p>
+        <div>
+            <label><InputCheckbox @bind-Value="Model.ShouldCreateNewCollection"/> Create a new collection:</label>
+            <InputText @bind-Value="Model.NewCollectionTitle" style="width: unset"></InputText>
+        </div>
+        <ValidationSummary/>
+        <div class="footer">
+            <button>Submit</button>
+        </div>
+    </EditForm>
+}
+else
+{
+    <Error/>
+}
 
 @code {
+
+
+    private Models.Note? _note;
+
+    [SupplyParameterFromForm]
+    public ChangeCollectionCommandDto? Model { get; set; }
+
+    private EditContext? EditContext { get; set; }
+
+    private ValidationMessageStore? MessageStore { get; set; }
+
+    [Parameter]
+    public string AuthorUsername { get; set; } = null!;
+
+    [Parameter]
+    public string NoteShortId { get; set; } = null!;
+
+    [Parameter]
+    public string? NoteSlug { get; set; }
+
+    [CascadingParameter]
+    public HttpContext HttpContext { get; set; } = null!;
+
+    private bool IsSuccessfullyInitialized { get; set; }
+
+    private List<Collection> Collections { get; set; } = [];
+    private Guid _currentUserId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _note = await NoteQueryService.GetNoteByUsernameAndShortIdAsync(AuthorUsername, NoteShortId);
+
+        if (_note == null)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        var currentUserId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var parsed = Guid.TryParse(currentUserId, out _currentUserId);
+        if (!parsed)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        Collections = await CollectionQueryService.GetUserCollections(_currentUserId);
+        var currentCollection = await CollectionQueryService.GetNoteCollection(_currentUserId, _note);
+
+        var slug = SlugGenerator.FromTitle(_note.Title);
+        if (NoteSlug != slug)
+        {
+            NavigationManager.NavigateTo(LinkManager.LinkToNote(_note));
+            return;
+        }
+
+        Model ??= new ChangeCollectionCommandDto
+        {
+            CollectionId = currentCollection?.Id.ToString() ?? ""
+        };
+        EditContext = new EditContext(Model);
+        MessageStore = new ValidationMessageStore(EditContext);
+        IsSuccessfullyInitialized = true;
+    }
+
+    private async Task OnValidSubmit()
+    {
+        if (Model!.ShouldCreateNewCollection)
+        {
+            var newCollectionId = await CollectionCommandService.CreateCollectionAsync(_currentUserId, Model!.NewCollectionTitle);
+            Model.CollectionId = newCollectionId.ToString() ?? "";
+        }
+
+        var parsed = Guid.TryParse(Model.CollectionId, out var collectionId);
+        var success = await CollectionCommandService.ChangeCollectionAsync(_currentUserId, _note!, parsed ? collectionId : null);
+        if (success)
+        {
+            NavigationManager.NavigateTo(parsed ? LinkManager.LinkToCollection(collectionId) : LinkManager.LinkToNote(_note!));
+        }
+        else
+        {
+            MessageStore?.Add(() => Model.CollectionId, "Something went wrong.");
+            EditContext?.NotifyValidationStateChanged();
+        }
+    }
 
 }

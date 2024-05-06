@@ -1,12 +1,15 @@
 @page "/feed"
 @using System.Security.Claims
 @using Niwa.Dtos.GardenDtos
+@using Niwa.Models
 @using Niwa.Services
+@using Niwa.Services.CollectionServices
 @using Niwa.Services.GardenServices
 @using Niwa.Components.Cards
 @inject IGardenQueryService GardenQueryService
 @inject IConfiguration Configuration
 @inject ILinkManager LinkManager
+@inject ICollectionQueryService CollectionQueryService
 
 @if (IsSuccessfullyInitialized)
 {
@@ -35,21 +38,21 @@
                 </li>
             </ul>
 
-            <hr/>
+            @if (Collections.Count > 0)
+            {
+                <hr/>
 
-            <h3>Collections</h3>
+                <h3>Collections</h3>
 
-            <ul>
-                <li>
-                    <a href="/collection/123456">Reading</a>
-                </li>
-                <li>
-                    <a href="/collection/123456">Reading</a>
-                </li>
-                <li>
-                    <a href="/collection/123456">Reading</a>
-                </li>
-            </ul>
+                <ul>
+                    @foreach (var collection in Collections)
+                    {
+                        <li>
+                            <RegularLink To="@LinkManager.LinkToCollection(collection.Id)">@collection.Title</RegularLink>
+                        </li>
+                    }
+                </ul>
+            }
 
             <hr/>
 
@@ -77,7 +80,8 @@ else
     [CascadingParameter]
     public HttpContext HttpContext { get; set; } = null!;
 
-    private List<GardenCardQueryDto> FeaturedGardens { get; set; } = new();
+    private List<GardenCardQueryDto> FeaturedGardens { get; set; } = [];
+    private List<Collection> Collections { get; set; } = [];
 
     private bool IsSuccessfullyInitialized { get; set; }
 
@@ -94,7 +98,9 @@ else
         var ids = Configuration.GetSection("Niwa:FeaturedGardens").Get<List<string>>()?.Select(Guid.Parse) ?? [];
         var gardens = await GardenQueryService.GetGardensWithStatsByIdsAsync(ids.ToList());
         FeaturedGardens = gardens.Select(GardenCardQueryDto.From).ToList();
+        Collections = await CollectionQueryService.GetUserCollections(_userId);
         IsSuccessfullyInitialized = true;
     }
 
 }
+

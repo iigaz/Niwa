@@ -9,4 +9,14 @@ public class CollectionQueryService(ICollectionQueryRepository collectionQueryRe
     {
         return collectionQueryRepository.GetNoteCollection(userId, note);
     }
+
+    public Task<Collection?> GetById(Guid collectionId)
+    {
+        return collectionQueryRepository.GetById(collectionId);
+    }
+
+    public Task<List<Collection>> GetUserCollections(Guid userId)
+    {
+        return collectionQueryRepository.GetUserCollections(userId);
+    }
 }

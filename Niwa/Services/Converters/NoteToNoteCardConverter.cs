@@ -3,7 +3,7 @@ using Niwa.Models;
 
 namespace Niwa.Services.Converters;
 
-public class NoteToNoteCardConverter(ILinkManager linkManager, ICollectionToCollectionConverter collectionConverter)
+public class NoteToNoteCardConverter(ILinkManager linkManager)
     : INoteToNoteCardConverter
 {
     public NoteCardQueryDto Convert(Note note)

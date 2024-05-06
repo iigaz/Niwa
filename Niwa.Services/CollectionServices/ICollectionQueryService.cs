@@ -5,4 +5,6 @@ namespace Niwa.Services.CollectionServices;
 public interface ICollectionQueryService
 {
     public Task<Collection?> GetNoteCollection(Guid userId, Note note);
+    public Task<Collection?> GetById(Guid collectionId);
+    public Task<List<Collection>> GetUserCollections(Guid userId);
 }

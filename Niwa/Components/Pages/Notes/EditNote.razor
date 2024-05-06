@@ -46,8 +46,6 @@ else
 
     private bool IsCurrentUserAuthor { get; set; }
 
-    private bool IsCurrentUserSubscribed { get; set; }
-
     protected override async Task OnInitializedAsync()
     {
         _note = await NoteQueryService.GetNoteByUsernameAndShortIdAsync(AuthorUsername, NoteShortId);
@@ -74,8 +72,6 @@ else
             NavigationManager.NavigateTo(LinkManager.LinkToNote(_note));
             return;
         }
-
-        if (parsed) IsCurrentUserSubscribed = await NoteQueryService.IsUserSubscribedAsync(currentUserGuid, _note);
 
         IsSuccessfullyInitialized = true;
         Model ??= new EditNoteCommandDto

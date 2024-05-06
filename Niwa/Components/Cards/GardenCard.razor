@@ -1,7 +1,9 @@
 @using Niwa.Dtos.GardenDtos
+@using Niwa.Services
+@inject ILinkManager LinkManager 
 <div class="card">
     <h5 class="title">
-        <RegularLink To="@Url">@Model.Title</RegularLink>
+        <RegularLink To="@LinkManager.LinkToGarden(Model.AuthorUsername)">@Model.Title</RegularLink>
     </h5>
     <div class="description">
         <Markdown Content="@Model.Description?.ReplaceLineEndings(" ")"/>
@@ -18,7 +20,7 @@
                     @foreach (var tag in Model.Tags)
                     {
                         @(" ")
-                        <a href="#" class="tag">@tag</a>
+                        <a href="@LinkManager.LinkToTag(tag)" class="tag">@tag</a>
                     }
                 </span>
             </span>
@@ -31,7 +33,5 @@
     [Parameter]
     [EditorRequired]
     public GardenCardQueryDto Model { get; set; } = null!;
-
-    private string Url => $"/garden/{Model.AuthorUsername}";
 
 }
