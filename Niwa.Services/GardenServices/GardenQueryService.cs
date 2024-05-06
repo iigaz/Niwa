@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Niwa.Models;
+using Niwa.Models.Enums;
 using Niwa.Services.GardenRepositories;
 using Niwa.Services.GardenServices.Models;
 using Niwa.Services.UserRepositories;
@@ -34,6 +35,17 @@ public class GardenQueryService(IGardenQueryRepository gardenQueryRepository, IU
         return gardenQueryRepository.GetGardens()
             .Include(garden => garden.FeaturedNotes)
             .AnyAsync(garden => garden.Id == note.GardenId && garden.FeaturedNotes.Contains(note));
+    }
+
+    public async Task<Garden?> GetGardenWithNotes(Guid currentUser, string username)
+    {
+        var garden = await GetFirstByUsernameAsync(username);
+        if (garden == null) return garden;
+        garden = await gardenQueryRepository.GetGardenWithNotes(garden.Id);
+        if (garden != null)
+            garden.Notes = garden.Notes.Where(note => note.Access == Access.Public || note.UserId == currentUser)
+                .ToList();
+        return garden;
     }
 
     private async Task<GardenWithStats> AddStatsToGarden(Garden garden)

@@ -10,4 +10,5 @@ public interface IGardenQueryRepository
     public Task<List<Garden>> GetGardensByIdsAsync(List<Guid> ids);
     public Task<int> GetPublicNoteCountAsync(Guid id);
     public Task<List<string>> GetMostPopularTags(Guid id, int limit);
+    public Task<Garden?> GetGardenWithNotes(Guid id);
 }

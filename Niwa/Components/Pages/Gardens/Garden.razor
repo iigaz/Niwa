@@ -19,7 +19,7 @@
     <h1>@Model.Title</h1>
     <ActionsContainer>
         <ActionsLeft>
-            <ActionLink To="/search">Search all notes</ActionLink>
+            <ActionLink To="search" RelativeTo="@NavigationManager.Uri">Search all notes</ActionLink>
             <AuthorizeView>
                 <Authorized>
                     @if (IsCurrentUserSubscribed)

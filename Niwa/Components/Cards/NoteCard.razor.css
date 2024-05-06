@@ -24,4 +24,5 @@ p {
     flex-direction: row;
     column-gap: 0.5rem;
     flex-wrap: wrap;
+    margin-top: 1rem;
 }

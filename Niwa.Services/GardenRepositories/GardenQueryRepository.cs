@@ -53,4 +53,10 @@ public class GardenQueryRepository(ApplicationDbContext context) : IGardenQueryR
             .Select(whateverItIs => whateverItIs.Tag)
             .ToListAsync();
     }
+
+    public Task<Garden?> GetGardenWithNotes(Guid id)
+    {
+        return context.Gardens.Include(garden => garden.Notes).ThenInclude(note => note.Tags)
+            .Include(garden => garden.User).SingleOrDefaultAsync(garden => garden.Id == id);
+    }
 }
