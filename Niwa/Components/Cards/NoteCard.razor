@@ -18,17 +18,12 @@
             {
                 <b>@(Model.Access.GetName())</b>
             }
-            @* @if (Model.RemoveFromCollectionAvailable) *@
-            @* { *@
-            @*     @(" ") *@
-            @*     <a href="#" class="btn-link">Remove from collection</a> *@
-            @* } *@
         </p>
         <p class="tags">
             @foreach (var tag in Model.Tags)
             {
                 @(" ")
-                <a href="#" class="tag">@tag</a>
+                <a href="@LinkManager.LinkToTag(tag)" class="tag">@tag</a>
             }
         </p>
     </CardDescription>

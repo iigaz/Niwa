@@ -1,64 +1,66 @@
-@page "/collection/123456"
+@page "/collection/{CollectionId}"
+@using Niwa.Models
+@using Niwa.Services.CollectionServices
+@using Niwa.Services.Converters
 @using Niwa.Components.Cards
+@inject INoteToNoteCardConverter NoteToNoteCardConverter
+@inject ICollectionQueryService CollectionQueryService
 
-<h3>Collection: Reading</h3>
+@if (IsSuccessfullyInitialized)
+{
+    <PageTitle>@Model!.Title</PageTitle>
+    <HeaderTitle>@Model!.Title</HeaderTitle>
 
-<div>
-    <form>
-        <input placeholder="Search query" type="search"/>
-        <button>Search</button>
-        <a href="/search">To global search</a>
-    </form>
-</div>
+    <h3>Collection: @Model!.Title</h3>
 
-<div class="cards">
-    <NoteCard Title="Shower me with Divine Love"
-              Image="peter-griffith.jpg"
-              Garden="admin1337"
-              Summary="The typical latin text used to build websites is so boring.  You know the “Lorem Ipsum …”   Well with this website you can create some “spiritual ipsum” that fits more of the vibe of your site. We want you to feel more aligned with your websites before you have your final text copy ready.
-Go to our homepage and generate some Spiritual ipsum and then copy that into to your web pages you are building."
-              RemoveFromCollectionAvailable="@true"
-              Tags="@(new List<string> { "divine", "spiritualipsum", "peter_griffin" })">
-    </NoteCard>
-    <NoteCard Title="Shower me with Divine Love"
-              Garden="admin1337"
-              Summary="The typical latin text used to build websites is so boring.  You know the “Lorem Ipsum …”   Well with this website you can create some “spiritual ipsum” that fits more of the vibe of your site. We want you to feel more aligned with your websites before you have your final text copy ready.
-Go to our homepage and generate some Spiritual ipsum and then copy that into to your web pages you are building."
-              RemoveFromCollectionAvailable="@true"
-              Tags="@(new List<string> { "divine", "spiritualipsum", "peter_griffin" })">
-    </NoteCard>
-    <NoteCard Title="Shower me with Divine Love"
-              Image="peter-griffith.jpg"
-              Garden="admin1337"
-              Summary="The typical latin text used to build websites is so boring.  You know the “Lorem Ipsum …”   Well with this website you can create some “spiritual ipsum” that fits more of the vibe of your site. We want you to feel more aligned with your websites before you have your final text copy ready.
-Go to our homepage and generate some Spiritual ipsum and then copy that into to your web pages you are building."
-              RemoveFromCollectionAvailable="@true"
-              Tags="@(new List<string> { "divine", "spiritualipsum", "peter_griffin" })">
-    </NoteCard>
-    <NoteCard Title="Shower me with Divine Love"
-              Garden="admin1337"
-              Summary="The typical latin text used to build websites is so boring.  You know the “Lorem Ipsum …”   Well with this website you can create some “spiritual ipsum” that fits more of the vibe of your site. We want you to feel more aligned with your websites before you have your final text copy ready.
-Go to our homepage and generate some Spiritual ipsum and then copy that into to your web pages you are building."
-              RemoveFromCollectionAvailable="@true"
-              Tags="@(new List<string> { "divine", "spiritualipsum", "peter_griffin" })">
-    </NoteCard>
-    <NoteCard Title="Shower me with Divine Love"
-              Image="peter-griffith.jpg"
-              Garden="admin1337"
-              Summary="The typical latin text used to build websites is so boring.  You know the “Lorem Ipsum …”   Well with this website you can create some “spiritual ipsum” that fits more of the vibe of your site. We want you to feel more aligned with your websites before you have your final text copy ready.
-Go to our homepage and generate some Spiritual ipsum and then copy that into to your web pages you are building."
-              Tags="@(new List<string> { "divine", "spiritualipsum", "peter_griffin" })"
-              RemoveFromCollectionAvailable="@true">
-    </NoteCard>
-    <NoteCard Title="Shower me with Divine Love"
-              Garden="admin1337"
-              Summary="The typical latin text used to build websites is so boring.  You know the “Lorem Ipsum …”   Well with this website you can create some “spiritual ipsum” that fits more of the vibe of your site. We want you to feel more aligned with your websites before you have your final text copy ready.
-Go to our homepage and generate some Spiritual ipsum and then copy that into to your web pages you are building."
-              RemoveFromCollectionAvailable="@true"
-              Tags="@(new List<string> { "divine", "spiritualipsum", "peter_griffin" })">
-    </NoteCard>
-</div>
+    @if (Model.Notes.Count > 0)
+    {
+        <div>
+            <form>
+                <input placeholder="Search query" type="search"/>
+                <button>Search</button>
+            </form>
+        </div>
+        <div class="cards">
+            @foreach (var note in Model!.Notes)
+            {
+                <NoteCard Model="@NoteToNoteCardConverter.Convert(note)"></NoteCard>
+            }
+        </div>
+    }
+    else
+    {
+        <p>Empty collection.</p>
+    }
+}
+else
+{
+    <Error/>
+}
 
 @code {
+
+    [Parameter]
+    public string CollectionId { get; set; } = null!;
+
+    private Collection? Model { get; set; }
+
+    [CascadingParameter]
+    public HttpContext HttpContext { get; set; } = null!;
+
+    private bool IsSuccessfullyInitialized { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var parsed = Guid.TryParse(CollectionId, out var collectionId);
+        if (!parsed)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        Model ??= await CollectionQueryService.GetById(collectionId);
+        IsSuccessfullyInitialized = true;
+    }
 
 }

@@ -14,7 +14,10 @@ public class CollectionQueryRepository(ApplicationDbContext context) : ICollecti
 
     public Task<Collection?> GetById(Guid collectionId)
     {
-        return context.Collections.SingleOrDefaultAsync(collection => collection.Id == collectionId);
+        return context.Collections.Include(collection => collection.Notes).ThenInclude(note => note.Garden)
+            .Include(collection => collection.Notes).ThenInclude(note => note.User)
+            .Include(collection => collection.Notes).ThenInclude(note => note.Tags)
+            .SingleOrDefaultAsync(collection => collection.Id == collectionId);
     }
 
     public Task<List<Collection>> GetUserCollections(Guid userId)

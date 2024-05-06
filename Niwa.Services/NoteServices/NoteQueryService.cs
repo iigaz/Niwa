@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Niwa.Models;
+using Niwa.Models.Enums;
 using Niwa.Services.NoteRepositories;
 using Niwa.Services.UserRepositories;
 
@@ -41,5 +42,11 @@ public class NoteQueryService(INoteQueryRepository noteQueryRepository, IUserQue
     public Task<List<NoteRevision>> GetNoteRevisionsAsync(Guid noteId)
     {
         return noteQueryRepository.GetNoteRevisionsAsync(noteId);
+    }
+
+    public async Task<List<Note>> GetNotesByTagAsync(Guid currentUser, string tag)
+    {
+        return (await noteQueryRepository.GetNotesByTagAsync(tag))
+            .Where(note => note.Access == Access.Public || note.UserId == currentUser).ToList();
     }
 }

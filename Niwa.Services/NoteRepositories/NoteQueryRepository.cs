@@ -48,6 +48,12 @@ public class NoteQueryRepository(ApplicationDbContext context) : INoteQueryRepos
         return await GetRevisions(note.LatestRevisionId);
     }
 
+    public Task<List<Note>> GetNotesByTagAsync(string tag)
+    {
+        return context.Notes.Include(note => note.Garden).ThenInclude(garden => garden.User).Include(note => note.Tags)
+            .Where(note => note.Tags.Any(t => t.Tag == tag)).ToListAsync();
+    }
+
     private static string? ApplyPatch(string origin, string delta)
     {
         var originBytes = Encoding.UTF8.GetBytes(origin);
