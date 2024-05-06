@@ -12,4 +12,5 @@ public interface INoteQueryService
     public Task<Note?> GetNoteSnapshotAsync(Note note, Guid startingRevisionId);
     public Task<List<NoteRevision>> GetNoteRevisionsAsync(Guid noteId);
     public Task<List<Note>> GetNotesByTagAsync(Guid currentUser, string tag);
+    public Task<List<Note>> GetNotesAsync(Guid currentUser);
 }

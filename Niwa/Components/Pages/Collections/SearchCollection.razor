@@ -1,8 +1,10 @@
 @page "/collection/{CollectionId}"
 @using Niwa.Models
 @using Niwa.Services.CollectionServices
+@using Niwa.Services.Converters
 @using Niwa.Components.Forms
 @inject ICollectionQueryService CollectionQueryService
+@inject INoteToNoteCardConverter NoteToNoteCardConverter
 
 @if (IsSuccessfullyInitialized)
 {
@@ -11,7 +13,7 @@
 
     <h3>Collection: @Model!.Title</h3>
 
-    <NoteSearchForm Notes="Model!.Notes.ToList()"></NoteSearchForm>
+    <NoteSearchForm Notes="Model!.Notes.Select(NoteToNoteCardConverter.Convert).ToList()" Query="@Query"></NoteSearchForm>
 }
 else
 {
@@ -24,6 +26,9 @@ else
     public string CollectionId { get; set; } = null!;
 
     private Collection? Model { get; set; }
+
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? Query { get; set; }
 
     [CascadingParameter]
     public HttpContext HttpContext { get; set; } = null!;

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Niwa.Models;
 using Niwa.Models.Meta;
+using Niwa.Search.Services;
 using Niwa.Services.GardenRepositories;
 using Niwa.Services.NoteRepositories;
 using Niwa.Services.NoteServices.Models;
@@ -16,7 +17,8 @@ public class NoteCommandService(
     INoteCommandRepository noteCommandRepository,
     INoteQueryRepository noteQueryRepository,
     IConfiguration configuration,
-    IGardenCommandRepository gardenCommandRepository) : INoteCommandService
+    IGardenCommandRepository gardenCommandRepository,
+    INoteSearchCommandService noteSearchCommandService) : INoteCommandService
 {
     public async Task<Note?> CreateAsync(CreateNoteCommand noteCommand)
     {
@@ -69,6 +71,15 @@ public class NoteCommandService(
         };
         await noteCommandRepository.CreateAsync(note, revision);
         await gardenCommandRepository.UpdateAsync(noteCommand.Garden);
+
+        var addedNote = await noteQueryRepository.GetNotes()
+            .Include(n => n.Garden)
+            .Include(n => n.Tags)
+            .Include(n => n.User)
+            .Include(n => n.LatestRevision)
+            .SingleOrDefaultAsync(n => n.Id == noteId);
+        if (addedNote != null)
+            await noteSearchCommandService.AddNoteToIndexAsync(addedNote);
         return note;
     }
 
@@ -77,7 +88,11 @@ public class NoteCommandService(
         var matches = new Regex(@"!\[.*?\]\((.*?)\)")
             .Matches(noteCommand.Content);
         var image = matches.Count > 0 ? matches[0].Groups[1].Value : null;
-        var originalNote = await noteQueryRepository.GetNotes().Include(note => note.Garden)
+        var originalNote = await noteQueryRepository.GetNotes()
+            .Include(note => note.Garden)
+            .Include(n => n.Tags)
+            .Include(n => n.User)
+            .Include(n => n.LatestRevision)
             .SingleOrDefaultAsync(note => note.Id == noteCommand.Id);
         if (originalNote == null)
             throw new ArgumentNullException();
@@ -116,6 +131,8 @@ public class NoteCommandService(
         originalNote.Files = noteCommand.Files;
         await noteCommandRepository.UpdateAsync(originalNote, revision);
         await gardenCommandRepository.UpdateAsync(originalNote.Garden);
+
+        await noteSearchCommandService.UpdateNoteAsync(originalNote);
         return true;
     }
 

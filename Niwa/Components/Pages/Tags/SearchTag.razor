@@ -1,9 +1,11 @@
 @page "/tag/{Tag}"
 @using System.Security.Claims
 @using Niwa.Models
+@using Niwa.Services.Converters
 @using Niwa.Services.NoteServices
 @using Niwa.Components.Forms
 @inject INoteQueryService NoteQueryService
+@inject INoteToNoteCardConverter NoteToNoteCardConverter
 
 @if (IsSuccessfullyInitialized)
 {
@@ -12,7 +14,7 @@
 
     <h3>Tag: @Tag</h3>
 
-    <NoteSearchForm Notes="Notes"></NoteSearchForm>
+    <NoteSearchForm Notes="Notes.Select(NoteToNoteCardConverter.Convert).ToList()" Query="@Query"></NoteSearchForm>
 }
 else
 {
@@ -25,6 +27,9 @@ else
 
     [Parameter]
     public string Tag { get; set; } = null!;
+
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? Query { get; set; }
 
     [CascadingParameter]
     public HttpContext HttpContext { get; set; } = null!;

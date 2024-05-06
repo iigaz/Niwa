@@ -1,61 +1,67 @@
 @page "/search"
-@using Niwa.Components.Cards
+@using System.Security.Claims
+@using Niwa.Dtos.NoteDtos
+@using Niwa.Search.Services
+@using Niwa.Services
+@using Niwa.Services.Converters
+@using Niwa.Services.NoteServices
+@using Niwa.Components.Forms
+@inject INoteQueryService NoteQueryService
+@inject INoteSearchQueryService NoteSearchQueryService
+@inject INoteToNoteCardConverter NoteToNoteCardConverter
+@inject ILinkManager LinkManager
 
-<div>
-    <form>
-        <input placeholder="Search query" type="search"/>
-        <button>Search</button>
-    </form>
-</div>
+@if (IsSuccessfullyInitialized)
+{
+    <PageTitle>Search notes</PageTitle>
+    <HeaderTitle>Search notes</HeaderTitle>
 
-<div class="cards">
-    <NoteCard Title="Shower me with Divine Love"
-              Image="peter-griffith.jpg"
-              Garden="admin1337"
-              Summary="The typical latin text used to build websites is so boring.  You know the “Lorem Ipsum …”   Well with this website you can create some “spiritual ipsum” that fits more of the vibe of your site. We want you to feel more aligned with your websites before you have your final text copy ready.
-Go to our homepage and generate some Spiritual ipsum and then copy that into to your web pages you are building."
-              Collection="Reading"
-              Tags="@(new List<string> { "divine", "spiritualipsum", "peter_griffin" })">
-    </NoteCard>
-    <NoteCard Title="Shower me with Divine Love"
-              Garden="admin1337"
-              Summary="The typical latin text used to build websites is so boring.  You know the “Lorem Ipsum …”   Well with this website you can create some “spiritual ipsum” that fits more of the vibe of your site. We want you to feel more aligned with your websites before you have your final text copy ready.
-Go to our homepage and generate some Spiritual ipsum and then copy that into to your web pages you are building."
-              Collection="Reading"
-              Tags="@(new List<string> { "divine", "spiritualipsum", "peter_griffin" })">
-    </NoteCard>
-    <NoteCard Title="Shower me with Divine Love"
-              Image="peter-griffith.jpg"
-              Garden="admin1337"
-              Summary="The typical latin text used to build websites is so boring.  You know the “Lorem Ipsum …”   Well with this website you can create some “spiritual ipsum” that fits more of the vibe of your site. We want you to feel more aligned with your websites before you have your final text copy ready.
-Go to our homepage and generate some Spiritual ipsum and then copy that into to your web pages you are building."
-              Collection="Reading"
-              Tags="@(new List<string> { "divine", "spiritualipsum", "peter_griffin" })">
-    </NoteCard>
-    <NoteCard Title="Shower me with Divine Love"
-              Garden="admin1337"
-              Summary="The typical latin text used to build websites is so boring.  You know the “Lorem Ipsum …”   Well with this website you can create some “spiritual ipsum” that fits more of the vibe of your site. We want you to feel more aligned with your websites before you have your final text copy ready.
-Go to our homepage and generate some Spiritual ipsum and then copy that into to your web pages you are building."
-              Collection="Reading"
-              Tags="@(new List<string> { "divine", "spiritualipsum", "peter_griffin" })">
-    </NoteCard>
-    <NoteCard Title="Shower me with Divine Love"
-              Image="peter-griffith.jpg"
-              Garden="admin1337"
-              Summary="The typical latin text used to build websites is so boring.  You know the “Lorem Ipsum …”   Well with this website you can create some “spiritual ipsum” that fits more of the vibe of your site. We want you to feel more aligned with your websites before you have your final text copy ready.
-Go to our homepage and generate some Spiritual ipsum and then copy that into to your web pages you are building."
-              Tags="@(new List<string> { "divine", "spiritualipsum", "peter_griffin" })"
-              RemoveFromCollectionAvailable="@true">
-    </NoteCard>
-    <NoteCard Title="Shower me with Divine Love"
-              Garden="admin1337"
-              Summary="The typical latin text used to build websites is so boring.  You know the “Lorem Ipsum …”   Well with this website you can create some “spiritual ipsum” that fits more of the vibe of your site. We want you to feel more aligned with your websites before you have your final text copy ready.
-Go to our homepage and generate some Spiritual ipsum and then copy that into to your web pages you are building."
-              Collection="Reading"
-              Tags="@(new List<string> { "divine", "spiritualipsum", "peter_griffin" })">
-    </NoteCard>
-</div>
+    <h3>Search notes</h3>
+
+    <NoteSearchForm Notes="Notes" Query="@Query"></NoteSearchForm>
+}
+else
+{
+    <Error/>
+}
 
 @code {
+
+    private List<NoteCardQueryDto> Notes { get; set; } = [];
+
+    [Parameter]
+    public string Tag { get; set; } = null!;
+
+    [CascadingParameter]
+    public HttpContext HttpContext { get; set; } = null!;
+
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? Query { get; set; }
+
+    private bool IsSuccessfullyInitialized { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Guid.TryParse(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier), out var currentUser);
+        if (Query != null)
+        {
+            Notes = (await NoteSearchQueryService.SearchNotesAsync(Query)).Select(note => new NoteCardQueryDto
+            {
+                Url = LinkManager.LinkToNote(note.Author, note.ShortId, note.Title),
+                Title = note.Title,
+                Image = note.Image,
+                Garden = note.GardenTitle,
+                Summary = note.Summary,
+                Access = note.Access,
+                Tags = note.Tags.ToList()
+            }).ToList();
+        }
+        else
+        {
+            Notes = (await NoteQueryService.GetNotesAsync(currentUser)).Select(NoteToNoteCardConverter.Convert).ToList();
+        }
+
+        IsSuccessfullyInitialized = true;
+    }
 
 }

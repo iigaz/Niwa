@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Niwa.Components;
 using Niwa.Database;
+using Niwa.Extensions;
+using Niwa.Search.Services;
 using Niwa.Services;
 using Niwa.Services.CollectionRepositories;
 using Niwa.Services.CollectionServices;
@@ -29,6 +31,9 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Database")));
+
+builder.Services.AddOpenSearch(builder.Configuration);
+
 builder.Services.AddScoped<IGardenCommandRepository, GardenCommandRepository>();
 builder.Services.AddScoped<IGardenQueryRepository, GardenQueryRepository>();
 builder.Services.AddScoped<IGardenQueryService, GardenQueryService>();
@@ -56,6 +61,8 @@ builder.Services.AddScoped<ICollectionQueryRepository, CollectionQueryRepository
 builder.Services.AddScoped<ICollectionCommandRepository, CollectionCommandRepository>();
 builder.Services.AddScoped<ICollectionQueryService, CollectionQueryService>();
 builder.Services.AddScoped<ICollectionCommandService, CollectionCommandService>();
+builder.Services.AddScoped<INoteSearchCommandService, NoteSearchCommandService>();
+builder.Services.AddScoped<INoteSearchQueryService, NoteSearchQueryService>();
 
 
 var app = builder.Build();
@@ -78,5 +85,15 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+// This endpoint is used to add all notes into index
+app.MapGet("/test-do-not-click",
+    async (INoteQueryRepository noteQueryRepository, INoteSearchCommandService noteSearchCommandService) =>
+    {
+        var notes = await noteQueryRepository.GetNotes().Include(note => note.Garden).Include(note => note.Tags)
+            .Include(note => note.User)
+            .Include(note => note.LatestRevision).ToListAsync();
+        foreach (var note in notes) await noteSearchCommandService.AddNoteToIndexAsync(note);
+    });
 
 app.Run();

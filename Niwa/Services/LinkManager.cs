@@ -41,6 +41,12 @@ public class LinkManager : ILinkManager
         return LinkToNote(note) + "/history";
     }
 
+    public string LinkToNote(string authorUsername, string shortId, string title)
+    {
+        return
+            $"/garden/{authorUsername}/{shortId}/{SlugGenerator.FromTitle(title)}";
+    }
+
     public string LinkToGarden(Garden garden)
     {
         return LinkToGarden(garden.User);

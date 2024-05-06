@@ -98,6 +98,7 @@
                 <span class="inline-list">
                     @foreach (var tag in Model.Tags)
                     {
+                        @(" ")
                         <a href="@LinkManager.LinkToTag(tag)" class="tag">@tag</a>
                     }
                 </span>
@@ -201,3 +202,4 @@ else
     }
 
 }
+

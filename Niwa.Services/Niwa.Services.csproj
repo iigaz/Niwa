@@ -9,10 +9,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Niwa.Database\Niwa.Database.csproj"/>
         <ProjectReference Include="..\Niwa.Models\Niwa.Models.csproj"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="UnitsOfWork\"/>
+        <ProjectReference Include="..\Niwa.Search\Niwa.Search.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

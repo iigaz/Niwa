@@ -1,20 +1,17 @@
-@using Niwa.Models
-@using Niwa.Services.Converters
+@using Niwa.Dtos.NoteDtos
 @using Niwa.Components.Cards
-@inject INoteToNoteCardConverter NoteToNoteCardConverter
-
 @if (Notes.Count > 0)
 {
     <div>
-        <form>
-            <input placeholder="Search query" type="search"/>
+        <form data-enhance @formname="search">
+            <input name="q" placeholder="Search query" type="search" value="@Query" required/>
             <button>Search</button>
         </form>
     </div>
     <div class="cards">
         @foreach (var note in Notes)
         {
-            <NoteCard Model="@NoteToNoteCardConverter.Convert(note)"></NoteCard>
+            <NoteCard Model="@note"></NoteCard>
         }
     </div>
 }
@@ -27,6 +24,10 @@ else
 
     [Parameter]
     [EditorRequired]
-    public List<Note> Notes { get; set; } = [];
+    public List<NoteCardQueryDto> Notes { get; set; } = [];
+
+    [Parameter]
+    [EditorRequired]
+    public string Query { get; set; } = "";
 
 }
