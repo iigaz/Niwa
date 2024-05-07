@@ -14,6 +14,5 @@ public class NoteFile
     public string Filename { get; set; } = null!;
 
     [Length(Lengths.UrlMin, Lengths.UrlMax)]
-    [Url]
     public string FileUrl { get; set; } = null!;
 }

@@ -5,5 +5,5 @@ namespace Niwa.Services.Converters;
 
 public interface INoteFileToNoteFileConverter
 {
-    public NoteFileQueryDto Convert(NoteFile noteFile);
+    public Task<NoteFileQueryDto> Convert(NoteFile noteFile);
 }

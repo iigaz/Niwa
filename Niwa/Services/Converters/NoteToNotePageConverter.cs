@@ -17,7 +17,7 @@ public class NoteToNotePageConverter(
             Garden = gardenLinkInfoConverter.Convert(note.Garden),
             Summary = note.Summary,
             Content = note.Content,
-            Attachments = note.Files.ToList(),
+            Attachments = [],
             Tags = note.Tags.Select(tag => tag.Tag).ToList(),
             LatestUpdateDateTime = note.LatestRevision.CreatedDateTime,
             CommentCount = commentCount,

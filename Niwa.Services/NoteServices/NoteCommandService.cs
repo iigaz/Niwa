@@ -128,11 +128,32 @@ public class NoteCommandService(
         originalNote.Content = noteCommand.Content;
         originalNote.Image = image;
         originalNote.Tags = tags.Select(tag => new NoteTag { NoteId = originalNote.Id, Tag = tag }).ToList();
-        originalNote.Files = noteCommand.Files;
         await noteCommandRepository.UpdateAsync(originalNote, revision);
         await gardenCommandRepository.UpdateAsync(originalNote.Garden);
 
         await noteSearchCommandService.UpdateNoteAsync(originalNote);
+        return true;
+    }
+
+    public async Task<bool> AddFilesAsync(Guid noteId, List<NoteFile> files)
+    {
+        var originalNote = await noteQueryRepository.GetNotes().Include(note => note.Files)
+            .SingleOrDefaultAsync(note => note.Id == noteId);
+        if (originalNote == null)
+            return false;
+        files.ForEach(file => { originalNote.Files.Add(file); });
+        await noteCommandRepository.UpdateAsync(originalNote);
+        return true;
+    }
+
+    public async Task<bool> RemoveFileAsync(Guid noteId, NoteFile noteFile)
+    {
+        var originalNote = await noteQueryRepository.GetNotes().Include(note => note.Files)
+            .SingleOrDefaultAsync(note => note.Id == noteId);
+        if (originalNote == null)
+            return false;
+        originalNote.Files.Remove(noteFile);
+        await noteCommandRepository.UpdateAsync(originalNote);
         return true;
     }
 

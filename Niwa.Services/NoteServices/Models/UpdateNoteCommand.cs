@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using Niwa.Models;
 using Niwa.Models.Enums;
 using Niwa.Models.Meta;
 
@@ -21,6 +20,4 @@ public class UpdateNoteCommand
     public Access Access { get; set; }
 
     public string Tags { get; set; } = "";
-
-    public ICollection<NoteFile> Files { get; set; } = new List<NoteFile>();
 }

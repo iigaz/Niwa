@@ -11,6 +11,8 @@
 @inject INoteCommandService NoteCommandService
 @inject NavigationManager NavigationManager
 @inject ILinkManager LinkManager
+@inject IFileUploadService FileUploadService
+@inject IConfiguration Configuration
 <EditForm EditContext="EditContext" Enhance OnSubmit="OnSubmit" FormName="EditNote">
     <DataAnnotationsValidator/>
     <div>
@@ -82,20 +84,9 @@
     {
         <div>
             <div class="content-header">
-                <span class="information">Supports markdown.</span><button type="button">Upload image</button>
+                <span class="information">Supports markdown.</span>
             </div>
             <InputTextArea rows="10" @bind-Value="Model!.Content"></InputTextArea>
-        </div>
-        <div>
-            <h5>Attachments</h5><InputFile multiple></InputFile>
-            <ul>
-                @foreach (var attachment in Model!.Files ?? new List<NoteFileQueryDto>())
-                {
-                    <li>
-                        <a href="@attachment.FileUrl">@attachment.Filename</a>&emsp;<a href="#" class="btn-link">Remove</a>
-                    </li>
-                }
-            </ul>
         </div>
     }
     <ValidationSummary/>
@@ -103,6 +94,29 @@
         <button type="submit">Submit</button>
     </div>
 </EditForm>
+@if (NoteId != null)
+{
+    <h5>Attachments</h5>
+    <form method="post" data-enhance enctype="multipart/form-data" @formname="UploadFiles" @onsubmit="UploadFiles">
+        <AntiforgeryToken/>
+        <div>
+            <input name="Files" type="file" multiple/>
+            <button>Upload</button>
+        </div>
+    </form>
+    <ul>
+        @foreach (var attachment in Model?.Files ?? new List<NoteFileQueryDto>())
+        {
+            <li class="attachment">
+                <a href="@attachment.FileUrl">@attachment.Filename</a>
+                <form data-enhance method="post" @onsubmit="() => RemoveFile(attachment.OriginalNoteFile)" @formname="@("delete" + attachment.OriginalNoteFile.Id)">
+                    <AntiforgeryToken/>
+                    <button class="btn-link">Remove</button>
+                </form>
+            </li>
+        }
+    </ul>
+}
 
 @code {
 
@@ -214,6 +228,51 @@
                 EditContext?.NotifyValidationStateChanged();
             }
         }
+    }
+
+    [SupplyParameterFromForm(FormName = "UploadFiles")]
+    public IFormFileCollection? Files { get; set; }
+
+    private async Task UploadFiles()
+    {
+        if (Files == null || Files.Count == 0)
+            return;
+        if (Model!.Files!.Count + Files.Count > 20)
+        {
+            MessageStore?.Add(() => Model!, "Sorry, but you cannot have more than 20 files on one note.");
+            EditContext?.NotifyValidationStateChanged();
+            return;
+        }
+
+        var maxSize = Configuration.GetSection("Niwa:MaxUploadSizeBytes").Get<long>();
+        var getFiles = Files.GetFiles("Files");
+        if (getFiles.Any(file => file.Length > maxSize))
+        {
+            MessageStore?.Add(() => Model!, "Files too large.");
+            EditContext?.NotifyValidationStateChanged();
+            return;
+        }
+
+        var files = await FileUploadService.UploadFiles(getFiles);
+        var success = await NoteCommandService.AddFilesAsync(NoteId!.Value, files.Select(file => new NoteFile
+        {
+            Filename = file.Filename,
+            FileUrl = file.FileUrl,
+            NoteId = NoteId!.Value
+        }).ToList());
+        if (!success)
+        {
+            MessageStore?.Add(() => Model!, "Something went wrong.");
+            EditContext?.NotifyValidationStateChanged();
+        }
+
+        NavigationManager.NavigateTo(NavigationManager.Uri);
+    }
+
+    private async Task RemoveFile(NoteFile original)
+    {
+        await NoteCommandService.RemoveFileAsync(NoteId!.Value, original);
+        NavigationManager.NavigateTo(NavigationManager.Uri);
     }
 
 }

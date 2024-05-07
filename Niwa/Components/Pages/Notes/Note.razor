@@ -19,6 +19,7 @@
 @inject IGardenQueryService GardenQueryService
 @inject IGardenCommandService GardenCommandService
 @inject ISubscriptionCommandService SubscriptionCommandService
+@inject INoteFileToNoteFileConverter NoteFileToNoteFileConverter
 
 @if (IsSuccessfullyInitialized)
 {
@@ -201,6 +202,7 @@ else
 
         IsSuccessfullyInitialized = true;
         Model = NoteToNotePageConverter.Convert(_note, commentCount, collection, featured);
+        Model.Attachments = (await Task.WhenAll(_note.Files.Select(async file => await NoteFileToNoteFileConverter.Convert(file)))).ToList();
     }
 
     private async Task FeatureNote(bool feature)

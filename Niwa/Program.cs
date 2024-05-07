@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Minio;
 using Niwa.Components;
 using Niwa.Database;
 using Niwa.Extensions;
@@ -37,6 +38,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Database")));
 
 builder.Services.AddOpenSearch(builder.Configuration);
+builder.Services.AddMinio(configureClient => configureClient
+    .WithEndpoint(builder.Configuration["MinIO:Endpoint"])
+    .WithCredentials(builder.Configuration["MinIO:AccessKey"],
+        builder.Configuration["MinIO:SecretKey"]).WithSSL(false));
 
 builder.Services.AddScoped<IGardenCommandRepository, GardenCommandRepository>();
 builder.Services.AddScoped<IGardenQueryRepository, GardenQueryRepository>();
@@ -73,6 +78,8 @@ builder.Services.AddScoped<ICommentQueryService, CommentQueryService>();
 builder.Services.AddScoped<ICommentCommandService, CommentCommandService>();
 builder.Services.AddScoped<INewsQueryService, NewsQueryService>();
 builder.Services.AddScoped<ISubscriptionCommandService, SubscriptionCommandService>();
+builder.Services.AddScoped<IFileUploadService, FileUploadService>();
+builder.Services.AddScoped<IFileDownloadService, FileDownloadService>();
 
 var app = builder.Build();
 

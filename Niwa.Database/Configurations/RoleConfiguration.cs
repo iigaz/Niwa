@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Niwa.Models;
+using Niwa.Models.Values;
 
 namespace Niwa.Database.Configurations;
 
@@ -12,15 +13,7 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
         builder.HasData(new Role
         {
             Id = 1,
-            Label = "viewer"
-        }, new Role
-        {
-            Id = 2,
-            Label = "editor"
-        }, new Role
-        {
-            Id = 3,
-            Label = "commentator"
+            Label = Roles.Moderator
         });
     }
 }

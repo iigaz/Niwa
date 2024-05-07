@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using Niwa.Models;
-using Niwa.Services.RoleRepositories;
 using Niwa.Services.UnitsOfWork;
 using Niwa.Services.UserRepositories;
 
@@ -9,7 +8,6 @@ namespace Niwa.Services.RegistrationServices;
 
 public class RegistrationCommandService(
     IUserQueryRepository userQueryRepository,
-    IRoleQueryRepository roleQueryRepository,
     IUserGardenUnitOfWork unitOfWork)
     : IRegistrationCommandService
 {
@@ -27,7 +25,6 @@ public class RegistrationCommandService(
             validationResults.Add(new ValidationResult("User with this username already exists."));
         }
 
-        var roles = await roleQueryRepository.GetRoles().ToListAsync();
         var userId = Guid.NewGuid();
         var title = $"{username}'s Garden";
 
@@ -36,8 +33,7 @@ public class RegistrationCommandService(
             Id = userId,
             Username = username,
             EmailAddress = null,
-            PasswordHash = User.HashPassword(password),
-            Roles = roles[..3] // Every user has the first three roles.
+            PasswordHash = User.HashPassword(password)
         };
         var garden = new Garden
         {

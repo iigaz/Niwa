@@ -27,4 +27,10 @@ public class NoteCommandRepository(ApplicationDbContext context) : INoteCommandR
         await context.SaveChangesAsync();
         await transaction.CommitAsync();
     }
+
+    public async Task UpdateAsync(Note note)
+    {
+        context.Notes.Update(note);
+        await context.SaveChangesAsync();
+    }
 }

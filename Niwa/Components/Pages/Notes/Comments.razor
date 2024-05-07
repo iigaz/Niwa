@@ -6,6 +6,7 @@
 @using Niwa.Models
 @using Niwa.Models.Enums
 @using Niwa.Models.Meta
+@using Niwa.Models.Values
 @using Niwa.Services
 @using Niwa.Services.CommentServices
 @using Niwa.Services.NoteServices
@@ -84,9 +85,9 @@
 
                             <AuthorizeView>
                                 <Authorized>
-                                    @if (_currentUserId == comment.UserId)
+                                    @if (_currentUserId == comment.UserId || IsCurrentUserModerator)
                                     {
-                                        <form method="post" data-enhance @formname="@("delete" + comment.Id)" @onsubmit="() => DeleteComment(comment.Id)">
+                                        <form method="post" data-enhance @formname="@("delete" + comment.Id)" @onsubmit="() => DeleteComment(comment.UserId, comment.Id)">
                                             <AntiforgeryToken/>
                                             <button class="btn-link">Delete</button>
                                         </form>
@@ -154,6 +155,8 @@ else
 
     private bool IsCurrentUserAuthor { get; set; }
 
+    private bool IsCurrentUserModerator { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         _note = await NoteQueryService.GetNoteByUsernameAndShortIdAsync(AuthorUsername, NoteShortId);
@@ -169,7 +172,9 @@ else
         var parsed = Guid.TryParse(currentUserId, out _currentUserId);
         IsCurrentUserAuthor = parsed && _note.UserId == _currentUserId;
 
-        if (_note.Access == Access.Private && !IsCurrentUserAuthor)
+        IsCurrentUserModerator = HttpContext.User.IsInRole(Roles.Moderator);
+
+        if (_note.Access == Access.Private && !IsCurrentUserAuthor && !IsCurrentUserModerator)
         {
             HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
             return;
@@ -210,9 +215,9 @@ else
         }
     }
 
-    private async Task DeleteComment(Guid commentId)
+    private async Task DeleteComment(Guid authorId, Guid commentId)
     {
-        var success = await CommentCommandService.DeleteComment(_currentUserId, commentId);
+        var success = await CommentCommandService.DeleteComment(IsCurrentUserModerator ? authorId : _currentUserId, commentId);
         if (success)
         {
             NavigationManager.NavigateTo(new Uri(NavigationManager.Uri).AbsolutePath);
