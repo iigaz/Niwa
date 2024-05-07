@@ -1,15 +1,19 @@
 @page "/feed"
 @using System.Security.Claims
-@using Niwa.Dtos.GardenDtos
+@using Niwa.Extensions
 @using Niwa.Models
 @using Niwa.Services
 @using Niwa.Services.CollectionServices
 @using Niwa.Services.GardenServices
+@using Niwa.Services.NewsServices
+@using Niwa.Services.NewsServices.Models
+@using Niwa.Dtos.GardenDtos
 @using Niwa.Components.Cards
 @inject IGardenQueryService GardenQueryService
 @inject IConfiguration Configuration
 @inject ILinkManager LinkManager
 @inject ICollectionQueryService CollectionQueryService
+@inject INewsQueryService NewsQueryService
 
 @if (IsSuccessfullyInitialized)
 {
@@ -26,17 +30,26 @@
                 </ActionsRight>
             </ActionsContainer>
 
-            <hr/>
+            @if (News.Count > 0)
+            {
+                <hr/>
 
-            <h3>News</h3>
+                <h3>News</h3>
 
-            <ul>
-                <li>Admin1337 updated note: Shower me with divine love</li>
-                <li>Admin1337 added a new note: Shower me with divine love</li>
-                <li class="end">
-                    <a href="/feed/news" class="btn-link">Read more</a>
-                </li>
-            </ul>
+                <ul>
+                    @foreach (var newsModel in News.Take(_newsLimit))
+                    {
+                        <li>@newsModel.DateTime.TimeAgo(): @newsModel.Title @newsModel.Information</li>
+                    }
+
+                    @if (News.Count > _newsLimit)
+                    {
+                        <li class="end">
+                            <ActionLink To="/feed/news">Read more</ActionLink>
+                        </li>
+                    }
+                </ul>
+            }
 
             @if (Collections.Count > 0)
             {
@@ -73,15 +86,17 @@ else
 }
 
 @code {
-    // private static string Garden => "Admin1337";
 
     private Guid _userId;
+
+    private int _newsLimit;
 
     [CascadingParameter]
     public HttpContext HttpContext { get; set; } = null!;
 
     private List<GardenCardQueryDto> FeaturedGardens { get; set; } = [];
     private List<Collection> Collections { get; set; } = [];
+    private List<NewsModel> News { get; set; } = [];
 
     private bool IsSuccessfullyInitialized { get; set; }
 
@@ -99,8 +114,9 @@ else
         var gardens = await GardenQueryService.GetGardensWithStatsByIdsAsync(ids.ToList());
         FeaturedGardens = gardens.Select(GardenCardQueryDto.From).ToList();
         Collections = await CollectionQueryService.GetUserCollections(_userId);
+        _newsLimit = Configuration.GetSection("Niwa:NewsOnMainPage").Get<int>();
+        News = await NewsQueryService.GetNewsAsync(_userId, _newsLimit + 1);
         IsSuccessfullyInitialized = true;
     }
 
 }
-

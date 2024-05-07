@@ -1,7 +1,50 @@
 @page "/feed/news"
-<h5>News</h5>
+@using System.Security.Claims
+@using Niwa.Extensions
+@using Niwa.Services.NewsServices
+@using Niwa.Services.NewsServices.Models
+@inject INewsQueryService NewsQueryService
 
-<ul>
-    <li>Admin1337 updated note: Shower me with divine love</li>
-    <li>Admin1337 added a new note: Shower me with divine love</li>
-</ul>
+@if (IsSuccessfullyInitialized)
+{
+    @if (NewsList.Count > 0)
+    {
+        <h3>News</h3>
+        <ul>
+            @foreach (var newsModel in NewsList)
+            {
+                <li>@newsModel.DateTime.TimeAgo(): @newsModel.Title @newsModel.Information</li>
+            }
+        </ul>
+    }
+}
+else
+{
+    <Error/>
+}
+
+@code {
+
+    [CascadingParameter]
+    public HttpContext HttpContext { get; set; } = null!;
+
+    private List<NewsModel> NewsList { get; set; } = [];
+
+    private bool IsSuccessfullyInitialized { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var currentUserId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var parsed = Guid.TryParse(currentUserId, out var userId);
+        if (!parsed)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return;
+        }
+
+        NewsList = await NewsQueryService.GetNewsAsync(userId, 250);
+        IsSuccessfullyInitialized = true;
+    }
+
+}

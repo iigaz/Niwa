@@ -8,6 +8,7 @@
 @using Niwa.Services.Converters
 @using Niwa.Services.GardenServices
 @using Niwa.Services.NoteServices
+@using Niwa.Services.SubscriptionServices
 @using Niwa.Dtos.NoteDtos
 @using System.Globalization
 @inject NavigationManager NavigationManager
@@ -17,6 +18,7 @@
 @inject ICollectionQueryService CollectionQueryService
 @inject IGardenQueryService GardenQueryService
 @inject IGardenCommandService GardenCommandService
+@inject ISubscriptionCommandService SubscriptionCommandService
 
 @if (IsSuccessfullyInitialized)
 {
@@ -114,11 +116,17 @@
                 <Authorized>
                     @if (IsCurrentUserSubscribed)
                     {
-                        <ActionLink To="unsubscribe" RelativeTo="@NavigationManager.Uri">Unsubscribe</ActionLink>
+                        <form data-enhance method="post" @onsubmit="() => SubscribeToNote(false)" @formname="UnsubscribeFromNote">
+                            <AntiforgeryToken/>
+                            <button class="btn-link">Unsubscribe</button>
+                        </form>
                     }
                     else
                     {
-                        <ActionLink To="subscribe" RelativeTo="@NavigationManager.Uri">Subscribe to updates</ActionLink>
+                        <form data-enhance method="post" @onsubmit="() => SubscribeToNote(true)" @formname="SubscribeToNote">
+                            <AntiforgeryToken/>
+                            <button class="btn-link">Subscribe to updates</button>
+                        </form>
                     }
                 </Authorized>
             </AuthorizeView>
@@ -137,6 +145,8 @@ else
     public NotePageQueryDto Model { get; set; } = null!;
 
     private Models.Note? _note;
+
+    private Guid _currentUserId;
 
     [Parameter]
     public string AuthorUsername { get; set; } = null!;
@@ -167,8 +177,8 @@ else
         }
 
         var currentUserId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var parsed = Guid.TryParse(currentUserId, out var currentUserGuid);
-        IsCurrentUserAuthor = parsed && _note.UserId == currentUserGuid;
+        var parsed = Guid.TryParse(currentUserId, out _currentUserId);
+        IsCurrentUserAuthor = parsed && _note.UserId == _currentUserId;
 
         if (_note.Access == Access.Private && !IsCurrentUserAuthor)
         {
@@ -183,10 +193,10 @@ else
             return;
         }
 
-        if (parsed) IsCurrentUserSubscribed = await NoteQueryService.IsUserSubscribedAsync(currentUserGuid, _note);
+        if (parsed) IsCurrentUserSubscribed = await NoteQueryService.IsUserSubscribedAsync(_currentUserId, _note);
 
         var commentCount = await NoteQueryService.GetCommentCountAsync(_note);
-        var collection = parsed ? await CollectionQueryService.GetNoteCollection(currentUserGuid, _note) : null;
+        var collection = parsed ? await CollectionQueryService.GetNoteCollection(_currentUserId, _note) : null;
         var featured = await GardenQueryService.DoesFeatureNoteAsync(_note);
 
         IsSuccessfullyInitialized = true;
@@ -201,5 +211,12 @@ else
         Model.Featured = feature;
     }
 
-}
+    private async Task SubscribeToNote(bool subscribe)
+    {
+        if (_note == null)
+            return;
+        await SubscriptionCommandService.SubscribeToNote(_currentUserId, _note.Id, subscribe);
+        IsCurrentUserSubscribed = subscribe;
+    }
 
+}

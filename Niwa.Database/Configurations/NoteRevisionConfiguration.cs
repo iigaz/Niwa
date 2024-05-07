@@ -9,5 +9,6 @@ public class NoteRevisionConfiguration : IEntityTypeConfiguration<NoteRevision>
     public void Configure(EntityTypeBuilder<NoteRevision> builder)
     {
         builder.HasOne(revision => revision.PreviousRevision).WithOne();
+        builder.HasOne(revision => revision.Note).WithOne(note => note.LatestRevision);
     }
 }

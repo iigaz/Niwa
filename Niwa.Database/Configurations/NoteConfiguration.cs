@@ -10,7 +10,7 @@ public class NoteConfiguration : IEntityTypeConfiguration<Note>
     {
         builder.HasOne(note => note.User).WithMany(user => user.Notes);
         builder.HasOne(note => note.Garden).WithMany(garden => garden.Notes);
-        builder.HasOne(note => note.LatestRevision).WithOne();
+        builder.HasOne(note => note.LatestRevision).WithOne(revision => revision.Note);
         builder.HasMany(note => note.Tags).WithOne(tag => tag.Note);
         builder.HasMany(note => note.Files).WithOne(file => file.Note);
         builder.HasMany(note => note.Comments).WithOne(comment => comment.Note);

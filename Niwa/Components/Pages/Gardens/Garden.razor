@@ -4,11 +4,13 @@
 @using Niwa.Services
 @using Niwa.Services.Converters
 @using Niwa.Services.GardenServices
+@using Niwa.Services.SubscriptionServices
 @using Niwa.Components.Cards
 @inject NavigationManager NavigationManager
 @inject ILinkManager LinkManager
 @inject IGardenQueryService GardenQueryService
 @inject IGardenToGardenPageConverter GardenToGardenPageConverter
+@inject ISubscriptionCommandService SubscriptionCommandService
 
 @if (SuccessfullyInitialized)
 {
@@ -24,11 +26,17 @@
                 <Authorized>
                     @if (IsCurrentUserSubscribed)
                     {
-                        <ActionLink To="unsubscribe" RelativeTo="@NavigationManager.Uri">Unsubscribe</ActionLink>
+                        <form data-enhance method="post" @onsubmit="() => SubscribeToGarden(false)" @formname="UnsubscribeFromNote">
+                            <AntiforgeryToken/>
+                            <button class="btn-link">Unsubscribe</button>
+                        </form>
                     }
                     else
                     {
-                        <ActionLink To="subscribe" RelativeTo="@NavigationManager.Uri">Subscribe to updates</ActionLink>
+                        <form data-enhance method="post" @onsubmit="() => SubscribeToGarden(true)" @formname="SubscribeToNote">
+                            <AntiforgeryToken/>
+                            <button class="btn-link">Subscribe to updates</button>
+                        </form>
                     }
                 </Authorized>
             </AuthorizeView>
@@ -73,6 +81,10 @@ else
 
     private GardenPageQueryDto Model { get; set; } = new();
 
+    private Models.Garden? _garden;
+
+    private Guid _currentUserGuid;
+
     private bool SuccessfullyInitialized { get; set; }
 
     private bool IsCurrentUserAuthor { get; set; }
@@ -81,19 +93,27 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var garden = await GardenQueryService.GetFirstByUsernameAsync(AuthorUsername, true);
-        if (garden == null)
+        _garden = await GardenQueryService.GetFirstByUsernameAsync(AuthorUsername, true);
+        if (_garden == null)
         {
             HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
             return;
         }
 
         var currentUserId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var parsed = Guid.TryParse(currentUserId, out var currentUserGuid);
-        IsCurrentUserAuthor = parsed && garden.UserId == currentUserGuid;
-        if (parsed) IsCurrentUserSubscribed = await GardenQueryService.IsUserSubscribedAsync(currentUserGuid, garden);
-        Model = GardenToGardenPageConverter.Convert(garden, !IsCurrentUserAuthor);
+        var parsed = Guid.TryParse(currentUserId, out _currentUserGuid);
+        IsCurrentUserAuthor = parsed && _garden.UserId == _currentUserGuid;
+        if (parsed) IsCurrentUserSubscribed = await GardenQueryService.IsUserSubscribedAsync(_currentUserGuid, _garden);
+        Model = GardenToGardenPageConverter.Convert(_garden, !IsCurrentUserAuthor);
         SuccessfullyInitialized = true;
+    }
+
+    private async Task SubscribeToGarden(bool subscribe)
+    {
+        if (_garden == null)
+            return;
+        await SubscriptionCommandService.SubscribeToGarden(_currentUserGuid, _garden.Id, subscribe);
+        IsCurrentUserSubscribed = subscribe;
     }
 
 }

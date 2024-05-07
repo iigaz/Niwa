@@ -8,6 +8,8 @@ public class NoteRevision
 {
     public Guid Id { get; set; }
 
+    public Note Note { get; set; } = null!;
+
     /// <summary>
     ///     Changes in the title. Null if title was not changed since last revision.
     ///     If it is actually more efficient to store the whole title (instead of the delta),

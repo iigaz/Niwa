@@ -3,6 +3,7 @@ using Fossil;
 using Microsoft.EntityFrameworkCore;
 using Niwa.Database;
 using Niwa.Models;
+using Niwa.Models.Enums;
 
 namespace Niwa.Services.NoteRepositories;
 
@@ -47,6 +48,33 @@ public class NoteQueryRepository(ApplicationDbContext context) : INoteQueryRepos
             return [];
         return await GetRevisions(note.LatestRevisionId);
     }
+
+    public Task<List<NoteRevision>> GetSubscribedNotesRevisionsAsync(User user, int? limit)
+    {
+        IQueryable<NoteRevision> query = context.NoteRevisions
+            .Where(revision => user.SubscribedNotes.Contains(revision.Note) &&
+                               (revision.Note.Access == Access.Public || revision.Note.UserId == user.Id))
+            .Include(revision => revision.Note)
+            .ThenInclude(note => note.User)
+            .OrderByDescending(revision => revision.CreatedDateTime);
+        if (limit != null)
+            query = query.Take(limit.Value);
+        return query.ToListAsync();
+    }
+
+    public Task<List<Note>> GetSubscribedGardensNotesAsync(User user, int? limit)
+    {
+        IQueryable<Note> query = context.Notes
+            .Where(note => user.SubscribedGardens.Contains(note.Garden) &&
+                           (note.Access == Access.Public || note.UserId == user.Id))
+            .Include(note => note.Garden)
+            .Include(note => note.User)
+            .OrderByDescending(note => note.CreatedDateTime);
+        if (limit != null)
+            query = query.Take(limit.Value);
+        return query.ToListAsync();
+    }
+
 
     public Task<List<Note>> GetNotesByTagAsync(string tag)
     {

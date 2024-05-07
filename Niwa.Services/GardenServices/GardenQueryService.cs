@@ -20,7 +20,7 @@ public class GardenQueryService(IGardenQueryRepository gardenQueryRepository, IU
 
     public async Task<bool> IsUserSubscribedAsync(Guid userId, Garden garden)
     {
-        var user = await userQueryRepository.GetUsers().SingleOrDefaultAsync(user => user.Id == userId);
+        var user = await userQueryRepository.GetUsers().Include(user => user.SubscribedGardens).SingleOrDefaultAsync(user => user.Id == userId);
         return user != null && user.SubscribedGardens.Any(g => g.Id == garden.Id);
     }
 

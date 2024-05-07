@@ -13,10 +13,12 @@ using Niwa.Services.Converters;
 using Niwa.Services.GardenRepositories;
 using Niwa.Services.GardenServices;
 using Niwa.Services.LoginServices;
+using Niwa.Services.NewsServices;
 using Niwa.Services.NoteRepositories;
 using Niwa.Services.NoteServices;
 using Niwa.Services.RegistrationServices;
 using Niwa.Services.RoleRepositories;
+using Niwa.Services.SubscriptionServices;
 using Niwa.Services.UnitsOfWork;
 using Niwa.Services.UserRepositories;
 
@@ -69,6 +71,8 @@ builder.Services.AddScoped<ICommentQueryRepository, CommentQueryRepository>();
 builder.Services.AddScoped<ICommentCommandRepository, CommentCommandRepository>();
 builder.Services.AddScoped<ICommentQueryService, CommentQueryService>();
 builder.Services.AddScoped<ICommentCommandService, CommentCommandService>();
+builder.Services.AddScoped<INewsQueryService, NewsQueryService>();
+builder.Services.AddScoped<ISubscriptionCommandService, SubscriptionCommandService>();
 
 var app = builder.Build();
 

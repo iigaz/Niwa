@@ -1,15 +1,16 @@
 @page "/garden/{AuthorUsername}/{NoteShortId}/{NoteSlug?}/history"
 @using System.Security.Claims
-@using System.Text
 @using Niwa.Extensions
 @using Niwa.Helpers
 @using Niwa.Models
 @using Niwa.Models.Enums
 @using Niwa.Services
+@using Niwa.Services.NewsServices
 @using Niwa.Services.NoteServices
 @inject ILinkManager LinkManager
 @inject INoteQueryService NoteQueryService
 @inject NavigationManager NavigationManager
+@inject INewsQueryService NewsQueryService
 @if (IsSuccessfullyInitialized)
 {
     <PageTitle>Revision history - @_note!.Title</PageTitle>
@@ -28,7 +29,7 @@
 
                 @if (revision.PreviousRevisionId != null)
                 {
-                    <td>@GetEdited(revision)</td>
+                    <td>@NewsQueryService.GetNoteRevisionDescription(revision)</td>
                 }
                 else if (revision.TitleRewritten)
                 {
@@ -98,36 +99,6 @@ else
 
         Model = await NoteQueryService.GetNoteRevisionsAsync(_note.Id);
         IsSuccessfullyInitialized = true;
-    }
-
-    private static string GetEdited(NoteRevision revision)
-    {
-        var changed = new List<string>();
-        if (revision.TitleDelta != null)
-            changed.Add("title");
-        if (revision.SummaryDelta != null)
-            changed.Add("summary");
-        if (revision.ContentDelta != null)
-            changed.Add("content");
-        if (revision.Access != null)
-            changed.Add($"access ({revision.Access.GetName()})");
-        var result = new StringBuilder();
-        if (changed.Count == 0)
-            result.Append("Nothing changed.");
-        else if (changed.Count == 1)
-            result.Append($"Changed {changed[0]}.");
-        else
-        {
-            result.Append($"Changed {changed[0]}");
-            for (var i = 1; i < changed.Count - 1; i++)
-            {
-                result.Append($", {changed[i]}");
-            }
-
-            result.Append($" and {changed[^1]}.");
-        }
-
-        return result.ToString();
     }
 
 }

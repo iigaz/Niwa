@@ -30,7 +30,7 @@ public class NoteQueryService(INoteQueryRepository noteQueryRepository, IUserQue
 
     public async Task<bool> IsUserSubscribedAsync(Guid userId, Note note)
     {
-        var user = await userQueryRepository.GetUsers().SingleOrDefaultAsync(user => user.Id == userId);
+        var user = await userQueryRepository.GetUsers().Include(user => user.SubscribedNotes).SingleOrDefaultAsync(user => user.Id == userId);
         return user != null && user.SubscribedNotes.Any(n => n.Id == note.Id);
     }
 
