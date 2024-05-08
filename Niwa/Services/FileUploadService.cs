@@ -4,9 +4,10 @@ using Niwa.Dtos.FileDtos;
 
 namespace Niwa.Services;
 
-public class FileUploadService(IMinioClient client, IConfiguration configuration) : IFileUploadService
+public class FileUploadService(IMinioClient client, IConfiguration configuration, ILogger<FileUploadService> logger)
+    : IFileUploadService
 {
-    public async Task<List<NoteFileQueryDto>> UploadFiles(IEnumerable<IFormFile> formFileCollection)
+    public async Task<List<NoteFileQueryDto>> UploadFilesAsync(IEnumerable<IFormFile> formFileCollection)
     {
         var bucket = configuration["MinIO:Bucket"];
         var args = new BucketExistsArgs().WithBucket(bucket);
@@ -28,6 +29,7 @@ public class FileUploadService(IMinioClient client, IConfiguration configuration
                 Filename = formFile.FileName,
                 FileUrl = filename
             });
+            logger.LogInformation("Uploaded file {filename}, size={filesize}", filename, formFile.Length);
         }
 
         return list;

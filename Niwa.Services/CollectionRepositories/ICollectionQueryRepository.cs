@@ -4,7 +4,7 @@ namespace Niwa.Services.CollectionRepositories;
 
 public interface ICollectionQueryRepository
 {
-    public Task<Collection?> GetNoteCollection(Guid userId, Note note);
-    public Task<Collection?> GetById(Guid collectionId);
-    public Task<List<Collection>> GetUserCollections(Guid userId);
+    public Task<Collection?> GetNoteCollectionAsync(Guid userId, Note note);
+    public Task<Collection?> GetByIdAsync(Guid collectionId);
+    public Task<List<Collection>> GetUserCollectionsAsync(Guid userId);
 }

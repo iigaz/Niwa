@@ -1,10 +1,12 @@
 @page "/register"
 @using Niwa.Services.RegistrationServices
+@using Niwa.Services
 @using System.ComponentModel.DataAnnotations
 @using Niwa.Models.Meta
 @inject IRegistrationCommandService RegistrationCommandService
 @inject NavigationManager NavigationManager
 @inject IConfiguration Configuration
+@inject ITurnstileValidatorService TurnstileValidatorService
 
 <PageTitle>Register</PageTitle>
 <HeaderTitle>Register</HeaderTitle>
@@ -37,6 +39,9 @@
                             Repeat Password
                             <InputText type="password" @bind-Value="Model!.RepeatPassword"></InputText>
                         </label>
+                    </div>
+                    <div class="cf-turnstile" data-sitekey="@Configuration["Turnstile:SiteKey"]" data-response-field-name="Model.TurnstileToken">
+                        <a data-enhance-nav="false" href="@NavigationManager.Uri">Captcha didn't load? Click here to refresh the page.</a>
                     </div>
                     <ValidationSummary/>
                     <ActionsContainer>
@@ -87,6 +92,15 @@
 
     private async Task Submit()
     {
+        var token = Model?.TurnstileToken;
+        var validated = token != null && await TurnstileValidatorService.ValidateAsync(token);
+        if (!validated)
+        {
+            MessageStore?.Add(() => Model!, "Could not validate captcha.");
+            EditContext?.NotifyValidationStateChanged();
+            return;
+        }
+
         var username = Model!.Username;
         var password = Model!.Password;
         var validationResults = await RegistrationCommandService.RegisterAsync(username, password);
@@ -94,6 +108,7 @@
         {
             var result = validationResults.First();
             MessageStore?.Add(() => Model.Username, result.ErrorMessage ?? "Something went wrong.");
+            EditContext?.NotifyValidationStateChanged();
         }
         else
         {
@@ -113,6 +128,8 @@
 
         [Length(8, 2048)]
         public string RepeatPassword { get; set; } = null!;
+
+        public string? TurnstileToken { get; set; }
     }
 
 }

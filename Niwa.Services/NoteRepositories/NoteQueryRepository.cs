@@ -9,9 +9,51 @@ namespace Niwa.Services.NoteRepositories;
 
 public class NoteQueryRepository(ApplicationDbContext context) : INoteQueryRepository
 {
-    public IQueryable<Note> GetNotes()
+    public Task<Note?> GetNoteByIdAsync(Guid noteId)
     {
-        return context.Notes;
+        return context.Notes.SingleOrDefaultAsync(note => note.Id == noteId);
+    }
+
+    public Task<Note?> GetNoteWithFilesByIdAsync(Guid noteId)
+    {
+        return context.Notes.Include(note => note.Files).SingleOrDefaultAsync(note => note.Id == noteId);
+    }
+
+    public Task<Note?> GetNoteWithRelevantInfoByUsernameAndShortIdAsync(string username, string shortId)
+    {
+        return context.Notes
+            .Include(note => note.User)
+            .Include(note => note.Garden)
+            .ThenInclude(garden => garden.User)
+            .Include(note => note.Files)
+            .Include(note => note.Tags)
+            .Include(note => note.LatestRevision).SingleOrDefaultAsync(note =>
+                note.Garden.User.Username == username && note.ShortId == shortId);
+    }
+
+    public Task<Note?> GetNoteWithRelevantInfoByIdAsync(Guid noteId)
+    {
+        return context.Notes
+            .Include(note => note.User)
+            .Include(note => note.Garden)
+            .ThenInclude(garden => garden.User)
+            .Include(note => note.Files)
+            .Include(note => note.Tags)
+            .Include(note => note.LatestRevision).SingleOrDefaultAsync(note => note.Id == noteId);
+    }
+
+    public Task<int> GetCommentCountAsync(Guid noteId)
+    {
+        return context.Notes
+            .Include(n => n.Comments)
+            .Where(n => n.Id == noteId)
+            .Select(n => n.Comments.Count(comment => !comment.Deleted)).SingleOrDefaultAsync();
+    }
+
+    public IQueryable<Note> GetNotesWithTagsGardenAndUsers()
+    {
+        return context.Notes.Include(note => note.Tags).Include(note => note.Garden)
+            .Include(note => note.User);
     }
 
     public async Task<Note?> GetNoteSnapshotAsync(Note note, Guid startingRevisionId)

@@ -1,8 +1,8 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using Fossil;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Niwa.Models;
 using Niwa.Models.Meta;
 using Niwa.Search.Services;
@@ -14,6 +14,7 @@ using Sqids;
 namespace Niwa.Services.NoteServices;
 
 public class NoteCommandService(
+    ILogger<NoteCommandService> logger,
     INoteCommandRepository noteCommandRepository,
     INoteQueryRepository noteQueryRepository,
     IConfiguration configuration,
@@ -29,7 +30,11 @@ public class NoteCommandService(
             StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (tags.Any(tag =>
                 tag.Length is > Lengths.TagMax or < Lengths.TagMin || !Regex.IsMatch(tag, "[-a-z0-9_\\+]+")))
+        {
+            logger.LogWarning("Tried to create note, but could not validate tags.");
             return null;
+        }
+
         var createdDateTime = DateTime.UtcNow;
         var revisionId = Guid.NewGuid();
         var revision = new NoteRevision
@@ -70,16 +75,22 @@ public class NoteCommandService(
             CreatedDateTime = createdDateTime
         };
         await noteCommandRepository.CreateAsync(note, revision);
+        // It does not need to be in a transaction. The latter command just bumps the updated date on garden.
         await gardenCommandRepository.UpdateAsync(noteCommand.Garden);
 
-        var addedNote = await noteQueryRepository.GetNotes()
-            .Include(n => n.Garden)
-            .Include(n => n.Tags)
-            .Include(n => n.User)
-            .Include(n => n.LatestRevision)
-            .SingleOrDefaultAsync(n => n.Id == noteId);
-        if (addedNote != null)
-            await noteSearchCommandService.AddNoteToIndexAsync(addedNote);
+        logger.LogInformation("Created note (Id={noteId}, ShortId={shortId})", noteId, shortId);
+        {
+            var addedNote = await noteQueryRepository.GetNoteWithRelevantInfoByIdAsync(noteId);
+            if (addedNote != null)
+            {
+                await noteSearchCommandService.AddNoteToIndexAsync(addedNote);
+                logger.LogInformation("Added note (Id={noteId}) to index.", noteId);
+            }
+            else
+            {
+                logger.LogWarning("After creating a note (Id={noteId}), could not find it in the database.", noteId);
+            }
+        }
         return note;
     }
 
@@ -88,20 +99,21 @@ public class NoteCommandService(
         var matches = new Regex(@"!\[.*?\]\((.*?)\)")
             .Matches(noteCommand.Content);
         var image = matches.Count > 0 ? matches[0].Groups[1].Value : null;
-        var originalNote = await noteQueryRepository.GetNotes()
-            .Include(note => note.Garden)
-            .Include(n => n.Tags)
-            .Include(n => n.User)
-            .Include(n => n.LatestRevision)
-            .SingleOrDefaultAsync(note => note.Id == noteCommand.Id);
+        var originalNote = await noteQueryRepository.GetNoteWithRelevantInfoByIdAsync(noteCommand.Id);
         if (originalNote == null)
-            throw new ArgumentNullException();
+        {
+            logger.LogWarning("Tried to update note (Id={noteId}), but could not find it.", noteCommand.Id);
+            return false;
+        }
 
         var tags = noteCommand.Tags
             .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (tags.Any(tag =>
                 tag.Length is > Lengths.TagMax or < Lengths.TagMin || !Regex.IsMatch(tag, "[-a-z0-9_\\+]+")))
+        {
+            logger.LogWarning("Tried to update note (Id={noteId}), but could not validate tags.", noteCommand.Id);
             return false;
+        }
 
         var (titleDelta, rewriteTitle) = GetDelta(originalNote.Title, noteCommand.Title);
         var (summaryDelta, rewriteSummary) = GetDelta(originalNote.Summary, noteCommand.Summary);
@@ -130,17 +142,23 @@ public class NoteCommandService(
         originalNote.Tags = tags.Select(tag => new NoteTag { NoteId = originalNote.Id, Tag = tag }).ToList();
         await noteCommandRepository.UpdateAsync(originalNote, revision);
         await gardenCommandRepository.UpdateAsync(originalNote.Garden);
-
         await noteSearchCommandService.UpdateNoteAsync(originalNote);
+
+        logger.LogInformation(
+            "Added note (Id={noteId}) revision. Use of compression: title={compressedTitle}, summary={compressedSummary}, content={compressedContent}",
+            originalNote.Id, !rewriteTitle, !rewriteSummary, !rewriteContent);
         return true;
     }
 
     public async Task<bool> AddFilesAsync(Guid noteId, List<NoteFile> files)
     {
-        var originalNote = await noteQueryRepository.GetNotes().Include(note => note.Files)
-            .SingleOrDefaultAsync(note => note.Id == noteId);
+        var originalNote = await noteQueryRepository.GetNoteWithFilesByIdAsync(noteId);
         if (originalNote == null)
+        {
+            logger.LogWarning("Tried to add files, but could not find note (Id={noteId})", noteId);
             return false;
+        }
+
         files.ForEach(file => { originalNote.Files.Add(file); });
         await noteCommandRepository.UpdateAsync(originalNote);
         return true;
@@ -148,12 +166,16 @@ public class NoteCommandService(
 
     public async Task<bool> RemoveFileAsync(Guid noteId, NoteFile noteFile)
     {
-        var originalNote = await noteQueryRepository.GetNotes().Include(note => note.Files)
-            .SingleOrDefaultAsync(note => note.Id == noteId);
+        var originalNote = await noteQueryRepository.GetNoteWithFilesByIdAsync(noteId);
         if (originalNote == null)
+        {
+            logger.LogWarning("Tried to remove files, but could not find note (Id={noteId})", noteId);
             return false;
+        }
+
         originalNote.Files.Remove(noteFile);
         await noteCommandRepository.UpdateAsync(originalNote);
+        logger.LogInformation("Removed note files (Id={noteId}) from database.", noteId);
         return true;
     }
 

@@ -209,7 +209,7 @@ else
     {
         if (_note == null)
             return;
-        await GardenCommandService.FeatureNote(_note.GardenId, _note.Id, feature);
+        await GardenCommandService.FeatureNoteAsync(_note.GardenId, _note.Id, feature);
         Model.Featured = feature;
     }
 
@@ -217,7 +217,7 @@ else
     {
         if (_note == null)
             return;
-        await SubscriptionCommandService.SubscribeToNote(_currentUserId, _note.Id, subscribe);
+        await SubscriptionCommandService.SubscribeToNoteAsync(_currentUserId, _note.Id, subscribe);
         IsCurrentUserSubscribed = subscribe;
     }
 

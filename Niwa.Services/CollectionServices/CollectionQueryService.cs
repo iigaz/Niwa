@@ -7,16 +7,16 @@ public class CollectionQueryService(ICollectionQueryRepository collectionQueryRe
 {
     public Task<Collection?> GetNoteCollection(Guid userId, Note note)
     {
-        return collectionQueryRepository.GetNoteCollection(userId, note);
+        return collectionQueryRepository.GetNoteCollectionAsync(userId, note);
     }
 
     public Task<Collection?> GetById(Guid collectionId)
     {
-        return collectionQueryRepository.GetById(collectionId);
+        return collectionQueryRepository.GetByIdAsync(collectionId);
     }
 
     public Task<List<Collection>> GetUserCollections(Guid userId)
     {
-        return collectionQueryRepository.GetUserCollections(userId);
+        return collectionQueryRepository.GetUserCollectionsAsync(userId);
     }
 }

@@ -6,13 +6,13 @@ namespace Niwa.Services.CollectionRepositories;
 
 public class CollectionQueryRepository(ApplicationDbContext context) : ICollectionQueryRepository
 {
-    public Task<Collection?> GetNoteCollection(Guid userId, Note note)
+    public Task<Collection?> GetNoteCollectionAsync(Guid userId, Note note)
     {
         return context.Collections.Include(collection => collection.Notes).SingleOrDefaultAsync(collection =>
             collection.UserId == userId && collection.Notes.Contains(note));
     }
 
-    public Task<Collection?> GetById(Guid collectionId)
+    public Task<Collection?> GetByIdAsync(Guid collectionId)
     {
         return context.Collections.Include(collection => collection.Notes).ThenInclude(note => note.Garden)
             .Include(collection => collection.Notes).ThenInclude(note => note.User)
@@ -20,7 +20,7 @@ public class CollectionQueryRepository(ApplicationDbContext context) : ICollecti
             .SingleOrDefaultAsync(collection => collection.Id == collectionId);
     }
 
-    public Task<List<Collection>> GetUserCollections(Guid userId)
+    public Task<List<Collection>> GetUserCollectionsAsync(Guid userId)
     {
         return context.Collections.Where(collection => collection.UserId == userId).ToListAsync();
     }

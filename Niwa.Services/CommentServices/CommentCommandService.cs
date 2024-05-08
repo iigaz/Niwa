@@ -1,14 +1,16 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Logging;
 using Niwa.Models;
 using Niwa.Services.CommentRepositories;
 
 namespace Niwa.Services.CommentServices;
 
 public class CommentCommandService(
+    ILogger<CommentCommandService> logger,
     ICommentCommandRepository commentCommandRepository,
     ICommentQueryRepository commentQueryRepository) : ICommentCommandService
 {
-    public async Task<bool> CreateComment(Guid userId, Guid noteId, Guid? parent, string content)
+    public async Task<bool> CreateCommentAsync(Guid userId, Guid noteId, Guid? parent, string content)
     {
         var comment = new Comment
         {
@@ -20,17 +22,27 @@ public class CommentCommandService(
             ParentId = parent
         };
         if (!Validator.TryValidateObject(comment, new ValidationContext(comment), new List<ValidationResult>()))
+        {
+            logger.LogWarning("Tried to create a comment, but could not validate it.");
             return false;
-        await commentCommandRepository.CreateComment(comment);
+        }
+
+        await commentCommandRepository.CreateCommentAsync(comment);
         return true;
     }
 
-    public async Task<bool> DeleteComment(Guid userId, Guid commentId)
+    public async Task<bool> DeleteCommentAsync(Guid userId, Guid commentId)
     {
-        var comment = await commentQueryRepository.GetById(commentId);
+        var comment = await commentQueryRepository.GetByIdAsync(commentId);
         if (comment == null || userId != comment.UserId)
+        {
+            logger.LogWarning(
+                "Tried to delete a comment (Id={commentId}), but either could not find comment or user (Id={userId} was not comment author.",
+                commentId, userId);
             return false;
-        await commentCommandRepository.DeleteComment(comment);
+        }
+
+        await commentCommandRepository.DeleteCommentAsync(comment);
         return true;
     }
 }

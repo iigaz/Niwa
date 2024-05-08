@@ -18,7 +18,6 @@ using Niwa.Services.NewsServices;
 using Niwa.Services.NoteRepositories;
 using Niwa.Services.NoteServices;
 using Niwa.Services.RegistrationServices;
-using Niwa.Services.RoleRepositories;
 using Niwa.Services.SubscriptionServices;
 using Niwa.Services.UnitsOfWork;
 using Niwa.Services.UserRepositories;
@@ -43,12 +42,13 @@ builder.Services.AddMinio(configureClient => configureClient
     .WithCredentials(builder.Configuration["MinIO:AccessKey"],
         builder.Configuration["MinIO:SecretKey"]).WithSSL(false));
 
+builder.Services.AddHttpClient();
+
 builder.Services.AddScoped<IGardenCommandRepository, GardenCommandRepository>();
 builder.Services.AddScoped<IGardenQueryRepository, GardenQueryRepository>();
 builder.Services.AddScoped<IGardenQueryService, GardenQueryService>();
 builder.Services.AddScoped<ILoginQueryService, LoginQueryService>();
 builder.Services.AddScoped<IRegistrationCommandService, RegistrationCommandService>();
-builder.Services.AddScoped<IRoleQueryRepository, RoleQueryRepository>();
 builder.Services.AddScoped<IUserCommandRepository, UserCommandRepository>();
 builder.Services.AddScoped<IUserQueryRepository, UserQueryRepository>();
 builder.Services.AddScoped<IUserGardenUnitOfWork, UserGardenUnitOfWork>();
@@ -80,6 +80,7 @@ builder.Services.AddScoped<INewsQueryService, NewsQueryService>();
 builder.Services.AddScoped<ISubscriptionCommandService, SubscriptionCommandService>();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 builder.Services.AddScoped<IFileDownloadService, FileDownloadService>();
+builder.Services.AddScoped<ITurnstileValidatorService, TurnstileValidatorService>();
 
 var app = builder.Build();
 

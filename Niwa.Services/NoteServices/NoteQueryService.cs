@@ -11,26 +11,17 @@ public class NoteQueryService(INoteQueryRepository noteQueryRepository, IUserQue
 {
     public Task<Note?> GetNoteByUsernameAndShortIdAsync(string username, string shortId)
     {
-        return noteQueryRepository.GetNotes()
-            .Include(note => note.Garden)
-            .ThenInclude(garden => garden.User)
-            .Include(note => note.Files)
-            .Include(note => note.Tags)
-            .Include(note => note.LatestRevision).SingleOrDefaultAsync(note =>
-                note.Garden.User.Username == username && note.ShortId == shortId);
+        return noteQueryRepository.GetNoteWithRelevantInfoByUsernameAndShortIdAsync(username, shortId);
     }
 
     public Task<int> GetCommentCountAsync(Note note)
     {
-        return noteQueryRepository.GetNotes()
-            .Include(n => n.Comments)
-            .Where(n => n.Id == note.Id)
-            .Select(n => n.Comments.Count(comment => !comment.Deleted)).SingleOrDefaultAsync();
+        return noteQueryRepository.GetCommentCountAsync(note.Id);
     }
 
     public async Task<bool> IsUserSubscribedAsync(Guid userId, Note note)
     {
-        var user = await userQueryRepository.GetUsers().Include(user => user.SubscribedNotes).SingleOrDefaultAsync(user => user.Id == userId);
+        var user = await userQueryRepository.GetUserByIdWithSubscribedNotesAsync(userId);
         return user != null && user.SubscribedNotes.Any(n => n.Id == note.Id);
     }
 
@@ -52,8 +43,7 @@ public class NoteQueryService(INoteQueryRepository noteQueryRepository, IUserQue
 
     public Task<List<Note>> GetNotesAsync(Guid currentUser)
     {
-        return noteQueryRepository.GetNotes().Include(note => note.Tags).Include(note => note.Garden)
-            .Include(note => note.User)
+        return noteQueryRepository.GetNotesWithTagsGardenAndUsers()
             .Where(note => note.Access == Access.Public || note.UserId == currentUser).ToListAsync();
     }
 }

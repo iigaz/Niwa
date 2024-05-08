@@ -4,6 +4,6 @@ namespace Niwa.Services.CommentRepositories;
 
 public interface ICommentCommandRepository
 {
-    public Task CreateComment(Comment comment);
-    public Task DeleteComment(Comment comment);
+    public Task CreateCommentAsync(Comment comment);
+    public Task DeleteCommentAsync(Comment comment);
 }

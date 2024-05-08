@@ -253,7 +253,7 @@
             return;
         }
 
-        var files = await FileUploadService.UploadFiles(getFiles);
+        var files = await FileUploadService.UploadFilesAsync(getFiles);
         var success = await NoteCommandService.AddFilesAsync(NoteId!.Value, files.Select(file => new NoteFile
         {
             Filename = file.Filename,

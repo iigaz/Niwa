@@ -112,7 +112,7 @@ else
     {
         if (_garden == null)
             return;
-        await SubscriptionCommandService.SubscribeToGarden(_currentUserGuid, _garden.Id, subscribe);
+        await SubscriptionCommandService.SubscribeToGardenAsync(_currentUserGuid, _garden.Id, subscribe);
         IsCurrentUserSubscribed = subscribe;
     }
 

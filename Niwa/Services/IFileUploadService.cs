@@ -4,5 +4,5 @@ namespace Niwa.Services;
 
 public interface IFileUploadService
 {
-    public Task<List<NoteFileQueryDto>> UploadFiles(IEnumerable<IFormFile> formFileCollection);
+    public Task<List<NoteFileQueryDto>> UploadFilesAsync(IEnumerable<IFormFile> formFileCollection);
 }

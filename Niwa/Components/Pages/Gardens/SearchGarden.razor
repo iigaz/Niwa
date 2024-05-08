@@ -45,7 +45,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         Guid.TryParse(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId);
-        Model ??= await GardenQueryService.GetGardenWithNotes(userId, AuthorUsername);
+        Model ??= await GardenQueryService.GetGardenWithNotesAsync(userId, AuthorUsername);
         if (Model == null)
         {
             HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;

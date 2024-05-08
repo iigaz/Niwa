@@ -14,7 +14,7 @@ public class CommentQueryRepository(ApplicationDbContext context) : ICommentQuer
             .ToListAsync();
     }
 
-    public Task<Comment?> GetById(Guid commentId)
+    public Task<Comment?> GetByIdAsync(Guid commentId)
     {
         return context.Comments.SingleOrDefaultAsync(comment => comment.Id == commentId);
     }

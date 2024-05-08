@@ -5,7 +5,7 @@ namespace Niwa.Services.CommentRepositories;
 
 public class CommentCommandRepository(ApplicationDbContext context) : ICommentCommandRepository
 {
-    public async Task CreateComment(Comment comment)
+    public async Task CreateCommentAsync(Comment comment)
     {
         comment.CreatedDateTime = DateTime.UtcNow;
         comment.UpdatedDateTime = DateTime.UtcNow;
@@ -13,7 +13,7 @@ public class CommentCommandRepository(ApplicationDbContext context) : ICommentCo
         await context.SaveChangesAsync();
     }
 
-    public async Task DeleteComment(Comment comment)
+    public async Task DeleteCommentAsync(Comment comment)
     {
         comment.Deleted = true;
         comment.UpdatedDateTime = DateTime.UtcNow;

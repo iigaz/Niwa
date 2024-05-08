@@ -203,7 +203,7 @@ else
 
     private async Task OnValidSubmit()
     {
-        var success = await CommentCommandService.CreateComment(_currentUserId, _note!.Id, _replyToGuid == Guid.Empty ? null : _replyToGuid, Model!.Content);
+        var success = await CommentCommandService.CreateCommentAsync(_currentUserId, _note!.Id, _replyToGuid == Guid.Empty ? null : _replyToGuid, Model!.Content);
         if (success)
         {
             NavigationManager.NavigateTo(new Uri(NavigationManager.Uri).AbsolutePath);
@@ -217,7 +217,7 @@ else
 
     private async Task DeleteComment(Guid authorId, Guid commentId)
     {
-        var success = await CommentCommandService.DeleteComment(IsCurrentUserModerator ? authorId : _currentUserId, commentId);
+        var success = await CommentCommandService.DeleteCommentAsync(IsCurrentUserModerator ? authorId : _currentUserId, commentId);
         if (success)
         {
             NavigationManager.NavigateTo(new Uri(NavigationManager.Uri).AbsolutePath);

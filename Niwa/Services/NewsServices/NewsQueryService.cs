@@ -1,5 +1,4 @@
 using System.Text;
-using Microsoft.EntityFrameworkCore;
 using Niwa.Extensions;
 using Niwa.Models;
 using Niwa.Services.NewsServices.Models;
@@ -13,8 +12,7 @@ public class NewsQueryService(IUserQueryRepository userQueryRepository, INoteQue
 {
     public async Task<List<NewsModel>> GetNewsAsync(Guid userId, int limit)
     {
-        var user = await userQueryRepository.GetUsers().Include(user => user.SubscribedGardens)
-            .Include(user => user.SubscribedNotes).SingleOrDefaultAsync(user => user.Id == userId);
+        var user = await userQueryRepository.GetUserByIdWithSubscriptionsAsync(userId);
         if (user == null)
             return [];
         var revisions = await noteQueryRepository.GetSubscribedNotesRevisionsAsync(user, limit);

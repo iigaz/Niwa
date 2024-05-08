@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Niwa.Models;
 using Niwa.Models.Enums;
 using Niwa.Services.GardenRepositories;
@@ -12,7 +11,7 @@ public class GardenQueryService(IGardenQueryRepository gardenQueryRepository, IU
 {
     public async Task<Garden?> GetFirstByUsernameAsync(string username, bool withFeaturedNotes = false)
     {
-        var user = await userQueryRepository.GetUsers().SingleOrDefaultAsync(user => user.Username == username);
+        var user = await userQueryRepository.GetUserAsync(username);
         if (user == null)
             return null;
         return await gardenQueryRepository.GetFirstByUserIdAsync(user.Id, withFeaturedNotes);
@@ -20,7 +19,7 @@ public class GardenQueryService(IGardenQueryRepository gardenQueryRepository, IU
 
     public async Task<bool> IsUserSubscribedAsync(Guid userId, Garden garden)
     {
-        var user = await userQueryRepository.GetUsers().Include(user => user.SubscribedGardens).SingleOrDefaultAsync(user => user.Id == userId);
+        var user = await userQueryRepository.GetUserByIdWithSubscribedGardensAsync(userId);
         return user != null && user.SubscribedGardens.Any(g => g.Id == garden.Id);
     }
 
@@ -32,16 +31,14 @@ public class GardenQueryService(IGardenQueryRepository gardenQueryRepository, IU
 
     public Task<bool> DoesFeatureNoteAsync(Note note)
     {
-        return gardenQueryRepository.GetGardens()
-            .Include(garden => garden.FeaturedNotes)
-            .AnyAsync(garden => garden.Id == note.GardenId && garden.FeaturedNotes.Contains(note));
+        return gardenQueryRepository.DoesFeatureNoteAsync(note);
     }
 
-    public async Task<Garden?> GetGardenWithNotes(Guid currentUser, string username)
+    public async Task<Garden?> GetGardenWithNotesAsync(Guid currentUser, string username)
     {
         var garden = await GetFirstByUsernameAsync(username);
         if (garden == null) return garden;
-        garden = await gardenQueryRepository.GetGardenWithNotes(garden.Id);
+        garden = await gardenQueryRepository.GetGardenWithNotesAsync(garden.Id);
         if (garden != null)
             garden.Notes = garden.Notes.Where(note => note.Access == Access.Public || note.UserId == currentUser)
                 .ToList();
@@ -51,7 +48,7 @@ public class GardenQueryService(IGardenQueryRepository gardenQueryRepository, IU
     private async Task<GardenWithStats> AddStatsToGarden(Garden garden)
     {
         var count = await gardenQueryRepository.GetPublicNoteCountAsync(garden.Id);
-        var popularTags = await gardenQueryRepository.GetMostPopularTags(garden.Id, 5);
+        var popularTags = await gardenQueryRepository.GetMostPopularTagsAsync(garden.Id, 5);
         var gardenWithStats = GardenWithStats.From(garden);
         gardenWithStats.PopularTags = popularTags;
         gardenWithStats.PublicNoteCount = count;

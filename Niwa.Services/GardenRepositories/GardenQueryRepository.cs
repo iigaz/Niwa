@@ -7,9 +7,9 @@ namespace Niwa.Services.GardenRepositories;
 
 public class GardenQueryRepository(ApplicationDbContext context) : IGardenQueryRepository
 {
-    public IQueryable<Garden> GetGardens()
+    public Task<Garden?> GetGardenWithFeaturedNotesByIdAsync(Guid id)
     {
-        return context.Gardens;
+        return context.Gardens.Include(garden => garden.FeaturedNotes).SingleOrDefaultAsync(garden => garden.Id == id);
     }
 
     public Task<Garden?> GetByIdAsync(Guid id)
@@ -40,7 +40,7 @@ public class GardenQueryRepository(ApplicationDbContext context) : IGardenQueryR
         return garden.Notes.Count(note => note.Access == Access.Public);
     }
 
-    public Task<List<string>> GetMostPopularTags(Guid id, int limit)
+    public Task<List<string>> GetMostPopularTagsAsync(Guid id, int limit)
     {
         return context.Gardens.Where(garden => garden.Id == id)
             .SelectMany(garden => garden.Notes)
@@ -54,9 +54,16 @@ public class GardenQueryRepository(ApplicationDbContext context) : IGardenQueryR
             .ToListAsync();
     }
 
-    public Task<Garden?> GetGardenWithNotes(Guid id)
+    public Task<Garden?> GetGardenWithNotesAsync(Guid id)
     {
         return context.Gardens.Include(garden => garden.Notes).ThenInclude(note => note.Tags)
             .Include(garden => garden.User).SingleOrDefaultAsync(garden => garden.Id == id);
+    }
+
+    public Task<bool> DoesFeatureNoteAsync(Note note)
+    {
+        return context.Gardens
+            .Include(garden => garden.FeaturedNotes)
+            .AnyAsync(garden => garden.Id == note.GardenId && garden.FeaturedNotes.Contains(note));
     }
 }
