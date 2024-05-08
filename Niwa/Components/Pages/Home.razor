@@ -1,10 +1,12 @@
 ﻿@page "/"
 @using Niwa.Dtos.GardenDtos
+@using Niwa.Options
 @using Niwa.Services.GardenServices
+@using Microsoft.Extensions.Options
 @using Niwa.Components.Cards
 @inject NavigationManager NavigationManager
 @inject IGardenQueryService GardenQueryService
-@inject IConfiguration Configuration
+@inject IOptionsMonitor<NiwaOptions> OptionsMonitor
 
 <TwoPanelBanner>
     <BannerLeft>
@@ -68,7 +70,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var ids = Configuration.GetSection("Niwa:FeaturedGardens").Get<List<string>>()?.Select(Guid.Parse) ?? [];
+        var ids = OptionsMonitor.CurrentValue.FeaturedGardens;
         var gardens = await GardenQueryService.GetGardensWithStatsByIdsAsync(ids.ToList());
         FeaturedGardens = gardens.Select(GardenCardQueryDto.From).ToList();
     }

@@ -1,8 +1,8 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using Fossil;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Niwa.Models;
 using Niwa.Models.Meta;
 using Niwa.Search.Services;
@@ -17,7 +17,7 @@ public class NoteCommandService(
     ILogger<NoteCommandService> logger,
     INoteCommandRepository noteCommandRepository,
     INoteQueryRepository noteQueryRepository,
-    IConfiguration configuration,
+    IOptionsMonitor<SqidsOptions> optionsMonitor,
     IGardenCommandRepository gardenCommandRepository,
     INoteSearchCommandService noteSearchCommandService) : INoteCommandService
 {
@@ -53,8 +53,7 @@ public class NoteCommandService(
         var noteId = Guid.NewGuid();
         var shortId = new SqidsEncoder<long>(new SqidsOptions
         {
-            Alphabet = configuration.GetSection("Sqids:Alphabet").Get<string>() ??
-                       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+            Alphabet = optionsMonitor.CurrentValue.Alphabet
         }).Encode(
             ((DateTimeOffset)createdDateTime).ToUnixTimeSeconds());
         var note = new Note

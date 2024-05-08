@@ -2,17 +2,19 @@
 @using Niwa.Extensions
 @using Niwa.Models
 @using Niwa.Models.Enums
+@using Niwa.Options
 @using Niwa.Services
 @using Niwa.Services.NoteServices
 @using Niwa.Services.NoteServices.Models
 @using OpenGraphNet
 @using Niwa.Dtos.NoteDtos
+@using Microsoft.Extensions.Options
 @using Niwa.Dtos.FileDtos
 @inject INoteCommandService NoteCommandService
 @inject NavigationManager NavigationManager
 @inject ILinkManager LinkManager
 @inject IFileUploadService FileUploadService
-@inject IConfiguration Configuration
+@inject IOptionsMonitor<NiwaOptions> OptionsMonitor
 <EditForm EditContext="EditContext" Enhance OnSubmit="OnSubmit" FormName="EditNote">
     <DataAnnotationsValidator/>
     <div>
@@ -244,9 +246,8 @@
             return;
         }
 
-        var maxSize = Configuration.GetSection("Niwa:MaxUploadSizeBytes").Get<long>();
         var getFiles = Files.GetFiles("Files");
-        if (getFiles.Any(file => file.Length > maxSize))
+        if (getFiles.Any(file => file.Length > OptionsMonitor.CurrentValue.MaxUploadSizeBytes))
         {
             MessageStore?.Add(() => Model!, "Files too large.");
             EditContext?.NotifyValidationStateChanged();

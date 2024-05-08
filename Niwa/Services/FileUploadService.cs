@@ -1,15 +1,20 @@
+using Microsoft.Extensions.Options;
 using Minio;
 using Minio.DataModel.Args;
 using Niwa.Dtos.FileDtos;
+using Niwa.Options;
 
 namespace Niwa.Services;
 
-public class FileUploadService(IMinioClient client, IConfiguration configuration, ILogger<FileUploadService> logger)
+public class FileUploadService(
+    IMinioClient client,
+    IOptionsMonitor<MinIoOptions> optionsMonitor,
+    ILogger<FileUploadService> logger)
     : IFileUploadService
 {
     public async Task<List<NoteFileQueryDto>> UploadFilesAsync(IEnumerable<IFormFile> formFileCollection)
     {
-        var bucket = configuration["MinIO:Bucket"];
+        var bucket = optionsMonitor.CurrentValue.Bucket;
         var args = new BucketExistsArgs().WithBucket(bucket);
         args.IsBucketCreationRequest = true;
         var bucketExists = await client.BucketExistsAsync(args);

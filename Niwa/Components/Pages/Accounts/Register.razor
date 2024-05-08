@@ -1,11 +1,14 @@
 @page "/register"
 @using Niwa.Services.RegistrationServices
+@using Niwa.Options
 @using Niwa.Services
+@using Microsoft.Extensions.Options
 @using System.ComponentModel.DataAnnotations
 @using Niwa.Models.Meta
 @inject IRegistrationCommandService RegistrationCommandService
 @inject NavigationManager NavigationManager
-@inject IConfiguration Configuration
+@inject IOptionsMonitor<NiwaOptions> NiwaOptionsMonitor
+@inject IOptionsMonitor<TurnstileOptions> TurnstileOptionsMonitor
 @inject ITurnstileValidatorService TurnstileValidatorService
 
 <PageTitle>Register</PageTitle>
@@ -40,7 +43,7 @@
                             <InputText type="password" @bind-Value="Model!.RepeatPassword"></InputText>
                         </label>
                     </div>
-                    <div class="cf-turnstile" data-sitekey="@Configuration["Turnstile:SiteKey"]" data-response-field-name="Model.TurnstileToken">
+                    <div class="cf-turnstile" data-sitekey="@TurnstileOptionsMonitor.CurrentValue.SiteKey" data-response-field-name="Model.TurnstileToken">
                         <a data-enhance-nav="false" href="@NavigationManager.Uri">Captcha didn't load? Click here to refresh the page.</a>
                     </div>
                     <ValidationSummary/>
@@ -79,7 +82,7 @@
         EditContext ??= new EditContext(Model);
         MessageStore ??= new ValidationMessageStore(EditContext);
         EditContext.OnValidationRequested += EditContextOnOnValidationRequested;
-        RegistrationOpen = Configuration.GetSection("Niwa:RegistrationOpen").Get<bool>();
+        RegistrationOpen = NiwaOptionsMonitor.CurrentValue.RegistrationOpen;
     }
 
     private void EditContextOnOnValidationRequested(object? sender, ValidationRequestedEventArgs e)
