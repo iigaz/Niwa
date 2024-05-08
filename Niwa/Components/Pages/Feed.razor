@@ -1,5 +1,6 @@
 @page "/feed"
 @using System.Security.Claims
+@using Microsoft.AspNetCore.Authentication
 @using Niwa.Extensions
 @using Niwa.Models
 @using Niwa.Options
@@ -16,6 +17,7 @@
 @inject ILinkManager LinkManager
 @inject ICollectionQueryService CollectionQueryService
 @inject INewsQueryService NewsQueryService
+@inject NavigationManager NavigationManager
 
 @if (IsSuccessfullyInitialized)
 {
@@ -25,6 +27,10 @@
             <ActionsContainer>
                 <ActionsLeft>
                     <ActionLink To="@LinkManager.LinkToGarden(context.User.Identity!.Name!)">View garden</ActionLink>
+                    <form data-enhance method="post" @onsubmit="Logout" @formname="Logout">
+                        <AntiforgeryToken/>
+                        <button class="btn-link">Logout</button>
+                    </form>
                 </ActionsLeft>
                 <ActionsRight>
                     <ActionLink To="@LinkManager.LinkToNewNote(context.User.Identity!.Name!, "plain")">New plain note</ActionLink>
@@ -119,6 +125,12 @@ else
         _newsLimit = OptionsMonitor.CurrentValue.NewsOnMainPage;
         News = await NewsQueryService.GetNewsAsync(_userId, _newsLimit + 1);
         IsSuccessfullyInitialized = true;
+    }
+
+    private async Task Logout()
+    {
+        await HttpContext.SignOutAsync();
+        NavigationManager.NavigateTo("/");
     }
 
 }

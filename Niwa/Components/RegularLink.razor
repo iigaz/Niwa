@@ -10,7 +10,7 @@
         {
             if (To.FirstOrDefault() is '?' or '#')
                 return RelativeTo + To;
-            var uri1 = RelativeTo!.TrimEnd('/');
+            var uri1 = RelativeTo?.TrimEnd('/') ?? "";
             var uri2 = To.TrimStart('/');
             return $"{uri1}/{uri2}";
         }

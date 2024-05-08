@@ -1,9 +1,12 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Niwa.Components;
 using Niwa.Database;
 using Niwa.Extensions.ServiceCollectionExtensions;
 using Niwa.Options;
+using Niwa.Services.NewsServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,18 +19,22 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
 builder.Services.AddAuthorization();
 
+builder.Services.AddHttpClient();
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Database")));
 
 builder.Services.AddOpenSearch(builder.Configuration);
 builder.Services.AddMinioConfigured(builder.Configuration);
 
-builder.Services.AddHttpClient();
-
 builder.Services.AddRepositories();
 builder.Services.AddModelsServices();
 builder.Services.AddHelperServices();
 builder.Services.AddSearchServices();
+builder.Services.AddConverters();
 
 builder.Services.Configure<NiwaOptions>(builder.Configuration.GetSection(NiwaOptions.Section));
 builder.Services.Configure<MinIoOptions>(builder.Configuration.GetSection(MinIoOptions.Section));
@@ -47,6 +54,11 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+else
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Niwa API V0"); });
+}
 
 app.UseHttpsRedirection();
 
@@ -55,6 +67,13 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.MapGet("/feed/news.json", async (ClaimsPrincipal principal, [FromServices] INewsQueryService newsQueryService) =>
+{
+    var currentUserId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+    var parsed = Guid.TryParse(currentUserId, out var userId);
+    return !parsed ? Results.Unauthorized() : Results.Ok(await newsQueryService.GetNewsAsync(userId, 250));
+});
 
 // This endpoint is used to add all notes into index
 // app.MapGet("/test-do-not-click",
