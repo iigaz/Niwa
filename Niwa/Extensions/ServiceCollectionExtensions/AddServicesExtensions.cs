@@ -1,5 +1,6 @@
 using Niwa.Search.Services;
 using Niwa.Services;
+using Niwa.Services.BackgroundJobServices;
 using Niwa.Services.CollectionServices;
 using Niwa.Services.CommentServices;
 using Niwa.Services.Converters;
@@ -58,6 +59,7 @@ public static class AddServicesExtensions
     {
         serviceCollection.AddScoped<INoteSearchCommandService, NoteSearchCommandService>();
         serviceCollection.AddScoped<INoteSearchQueryService, NoteSearchQueryService>();
+        serviceCollection.AddScoped<BackgroundNoteIndexingService>();
         return serviceCollection;
     }
 }

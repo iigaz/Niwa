@@ -15,4 +15,5 @@ public interface INoteQueryRepository
     public Task<List<NoteRevision>> GetSubscribedNotesRevisionsAsync(User user, int? limit);
     public Task<List<Note>> GetSubscribedGardensNotesAsync(User user, int? limit);
     public Task<List<Note>> GetNotesByTagAsync(string tag);
+    public Task<List<Note>> GetAllNotesForIndexingAsync();
 }

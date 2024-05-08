@@ -124,6 +124,13 @@ public class NoteQueryRepository(ApplicationDbContext context) : INoteQueryRepos
             .Where(note => note.Tags.Any(t => t.Tag == tag)).ToListAsync();
     }
 
+    public Task<List<Note>> GetAllNotesForIndexingAsync()
+    {
+        return context.Notes.Include(note => note.Garden).Include(note => note.Tags)
+            .Include(note => note.User)
+            .Include(note => note.LatestRevision).ToListAsync();
+    }
+
     private static string? ApplyPatch(string origin, string delta)
     {
         var originBytes = Encoding.UTF8.GetBytes(origin);

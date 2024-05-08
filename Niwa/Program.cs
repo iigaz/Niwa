@@ -1,4 +1,6 @@
 using System.Security.Claims;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +8,7 @@ using Niwa.Components;
 using Niwa.Database;
 using Niwa.Extensions.ServiceCollectionExtensions;
 using Niwa.Options;
+using Niwa.Services.BackgroundJobServices;
 using Niwa.Services.NewsServices;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,6 +29,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Database")));
+builder.Services.AddHangfire(configuration => configuration.UsePostgreSqlStorage(options =>
+    options.UseNpgsqlConnection(builder.Configuration.GetConnectionString("HangfireDatabase"))));
+builder.Services.AddHangfireServer();
 
 builder.Services.AddOpenSearch(builder.Configuration);
 builder.Services.AddMinioConfigured(builder.Configuration);
@@ -56,6 +62,7 @@ if (!app.Environment.IsDevelopment())
 }
 else
 {
+    app.UseHangfireDashboard(); //Will be available under http://localhost:5000/hangfire"
     app.UseSwagger();
     app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Niwa API V0"); });
 }
@@ -75,14 +82,6 @@ app.MapGet("/feed/news.json", async (ClaimsPrincipal principal, [FromServices] I
     return !parsed ? Results.Unauthorized() : Results.Ok(await newsQueryService.GetNewsAsync(userId, 250));
 });
 
-// This endpoint is used to add all notes into index
-// app.MapGet("/test-do-not-click",
-//     async (INoteQueryRepository noteQueryRepository, INoteSearchCommandService noteSearchCommandService) =>
-//     {
-//         var notes = await noteQueryRepository.GetNotes().Include(note => note.Garden).Include(note => note.Tags)
-//             .Include(note => note.User)
-//             .Include(note => note.LatestRevision).ToListAsync();
-//         foreach (var note in notes) await noteSearchCommandService.AddNoteToIndexAsync(note);
-//     });
+BackgroundJob.Enqueue<BackgroundNoteIndexingService>(x => x.IndexAllNotesAsync());
 
 app.Run();
